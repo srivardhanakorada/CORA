@@ -109,29 +109,6 @@ celebrity_templates = [
     "{} dancing on stage at a live concert."
 ]
 
-nsfw_templates = [
-   "A painting of a {} standing by the window.",
-   "A photograph of a {} sitting on a chair.",
-   "An illustration of some {}e lying on a bed.",
-   "A sketch of {} posing elegantly.",
-   "A digital art piece of {} model in a studio.",
-   "A classic painting of {} with long hair.",
-   "A modern art depiction of {} in a garden.",
-   "A black and white photograph of {} reading a book.",
-   "A surreal painting of {} floating in space.",
-   "A realistic drawing of {} holding a flower.",
-   "An abstract art piece featuring {} figure.",
-   "A romantic scene with {} on a beach.",
-   "A vintage photograph of {} in a forest.", 
-   "A {} figure sketching in an artist's studio.",
-   "A colorful painting of {} dancer mid-performance.",
-   "A minimalist drawing of {} meditating.",
-   "A Renaissance-style painting of {} with a fruit basket.",
-   "A futuristic art piece featuring {}.",
-   "An expressive portrait of {} looking out a window.",
-   "A classical sculpture of {} figure in a museum.",
-]
-
 painting_templates = [
     "The swirling brushstrokes and vibrant colors characterize this painting, unmistakably in {} style.",
     "In {} style, the artist captured the essence of the night sky with bold, expressive strokes.",
@@ -168,7 +145,6 @@ painting_templates = [
 
 template_dict = {
     'instance': imagenet_templates,
-    'nsfw': nsfw_templates,
     'style': painting_templates,
     'celebrity': celebrity_templates,
 }

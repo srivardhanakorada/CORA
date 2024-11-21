@@ -375,7 +375,7 @@ def main():
 
     # Sampling process
     seed_everything(args.seed, True)
-    prompt_list = [[x.format(concept) for x in temp] for concept in concept_list]
+    prompt_list = [[x.format(concept) for x in template_dict[args.erase_type]] for concept in concept_list]
     for i in range(int(args.num_samples // bs)):
         latent = torch.randn(bs, 4, 64, 64).to(pipe.device, dtype=target_concept_encoding.dtype)
         for concept, prompts in zip(concept_list, prompt_list):

@@ -57,21 +57,4 @@ def process_img(decoded_image):
     decoded_image = decoded_image.cpu().numpy()
     return Image.fromarray(decoded_image)
 
-
-class AdaDataset(Dataset):
-    def __init__(self, data_path, seed=None, guidance_scale=None):
-        self.data_path = data_path
-        self.data = pd.read_csv(data_path)
-        self.idx = self.data.index.values.tolist()
-        self.data = self.data.iloc[self.idx]
-        self.prompt_list = list(self.data['prompt'])
-        self.seed = list(self.data['sd_seed'])
-        self.guidance_scale = list(self.data['sd_guidance_scale'])
-
-    def __getitem__(self, idx):
-        return {'prompt': self.prompt_list[idx], 'prompt_idx': self.idx[idx], 'seed':self.seed[idx], 'guidance': self.guidance_scale[idx]}
-
-    def __len__(self):
-        return len(self.prompt_list)
-
         
