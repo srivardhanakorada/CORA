@@ -20,7 +20,7 @@ conda env create -f environment.yml
 
 - **Generate with the Provided code**
     
-    To evaluate our **AdaVD using the provided benchmark** and obtain quantitative performance metrics for concept erasure, please run the following commands:
+    To evaluate our **AdaVD using the provided benchmark** and obtain quantitative performance metrics for concept erasure, please run the following command:
     
     ```bash
     CUDA_VISIBLE_DEVICES=${gpu_id} python src/main.py \
@@ -41,7 +41,7 @@ conda env create -f environment.yml
         --save_root ${your_save_path} \
     ```
     
-    In the commands above, you can configure the `--sample_mode` parameter to determine the sampling mode:
+    In the command above, you can configure the `--sample_mode` parameter to determine the sampling mode:
     
     - **`original`**: Generates images using the original Stable Diffusion model.
     - **`retain`**: Produces images after target concept erasure.
@@ -55,7 +55,7 @@ conda env create -f environment.yml
     
     You can also adjust the hyper-parameters `--sigmoid_a`, `--sigmoid_b`, and `--sigmoid_c` to erase implicit  concept.
     
-    If you want to evaluate AdaVD with **your own benchmark** or **apply it to eliminate numerous concepts**, please run the following commands:
+    If you want to evaluate AdaVD with **your own benchmark** or **apply it to eliminate numerous concepts**, please run the following command:
     
     ```bash
     CUDA_VISIBLE_DEVICES=${gpu_id} python src/main_multi.py \
@@ -97,7 +97,7 @@ conda env create -f environment.yml
 
 ## **03. Evaluate AdaVD**
 
-To validate the results presented in our paper, you can run the following commands:
+To validate the results presented in our paper, you can run the following command:
 ```bash
 CUDA_VISIBLE_DEVICES=${gpu_id} python src/clip_score_cal.py \
   --contents ${evaluate_concept} \
