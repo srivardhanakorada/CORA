@@ -330,9 +330,7 @@ def main():
     # endregion
 
     # Sampling process
-    if args.contents == 'nudity':
-        dataset = AdaDataset(data_path='data/i2p_benchmark.csv')
-    elif 'erase' in args.contents or 'retention' in args.contents:
+    if 'erase' in args.contents or 'retention' in args.contents:
         dataset = AdaDataset(data_path =f'data/{args.erase_type}.csv', guidance_scale=args.guidance_scale)
     dataloader = DataLoader(dataset, batch_size=bs, drop_last=False)
     target_concepts = [item.strip() for item in args.target_concept.split(', ')]
@@ -431,20 +429,12 @@ class AdaDataset(Dataset):
     def __init__(self, data_path, seed=None, guidance_scale=None, max_num=100000):
         self.data_path = data_path
         self.data = pd.read_csv(data_path)
-        if 'i2p' in data_path:
-            self.idx = list(range(1000, 2000))[:max_num]
-            # self.idx = list(range(4703))[:max_num]
-            self.data = self.data.iloc[self.idx]
-            self.prompt_list = list(self.data['prompt'])
-            self.seed = list(self.data['sd_seed'])
-            self.guidance_scale = list(self.data['sd_guidance_scale'])
-        else:
-            self.prompt_list = list(self.data['text'])[:max_num]
-            self.idx = list(self.data['id'])[:max_num]
-            self.seed = list(self.data['seed'])
-            self.concept = list(self.data['concept'])[:max_num]
-            self.guidance_scale = [guidance_scale] * len(self.prompt_list)
-            self.type = list(self.data['type'])[:max_num]
+        self.prompt_list = list(self.data['text'])[:max_num]
+        self.idx = list(self.data['id'])[:max_num]
+        self.seed = list(self.data['seed'])
+        self.concept = list(self.data['concept'])[:max_num]
+        self.guidance_scale = [guidance_scale] * len(self.prompt_list)
+        self.type = list(self.data['type'])[:max_num]
 
     def __getitem__(self, idx):
         item = {
@@ -452,9 +442,8 @@ class AdaDataset(Dataset):
             'idx': self.idx[idx],
             'seed': self.seed[idx],
             'guidance': self.guidance_scale[idx],
+            'type': self.type[idx]
         }
-        if 'i2p' not in self.data_path:
-            item['type'] = self.type[idx]
         return item
     
     def __len__(self):
