@@ -13,7 +13,13 @@ Author: Yuan Wang, Ouxiang Li, Tingting Mu, Yanbin Hao, Kuien Liu, Xiang Wang, X
 ### **01. Setup for experiments**
 
 ```bash
-conda env create -f environment.yml
+# create conda environment
+conda create -n AdaVD -y python=3.9
+conda activate AdaVD
+# install pytorch
+pip install torch==2.0.1 torchvision==0.15.2
+# install other dependencies
+pip install-r requirements.txt
 ```
 
 ### 02. Image Generation with AdaVD
@@ -92,23 +98,16 @@ conda env create -f environment.yml
     
 - **Generate in the notebook demo**
     
-    You can also use the [`demo.ipynb`](https://github.com/Con6924/SPM/blob/main/demo.ipynb) notebook to quickly generate examples and compare the original generated image, the visualized erased component, and the image after concept erasure. This provides a clear understanding of the erasure efficacy and prior preservation performance of our AdaVD.
+    You can also use the [`demo.ipynb`](https://github.com/WYuan1001/AdaVD/blob/main/demo.ipynb) notebook to quickly generate examples and compare the original generated image, the visualized erased component, and the image after concept erasure. This provides a clear understanding of the erasure efficacy and prior preservation performance of our AdaVD.
     
 
 ## **03. Evaluate AdaVD**
 
 To validate the results presented in our paper, you can run the following command:
 ```bash
-CUDA_VISIBLE_DEVICES=${gpu_id} python src/clip_score_cal.py \
-  --contents ${evaluate_concept} \
-  --root_path ${root_path_of_erased_image} \
-  --sub_root ${sub_root_for_evaluation} \
-  --pretrained_path ${path_of_original_image}
-  
-# Example: 
-CUDA_VISIBLE_DEVICES=${gpu_id} python src/clip_score_cal.py \
-  --contents 'Van Gogh, Picasso, Monet, Andy Warhol, Caravaggio' \
-  --root_path 'logs/style' \
-  --sub_root 'retain' \
-  --pretrained_path 'data/pretrain/style'
+# sample original image
+bash scripts/sample_pretrain.sh
+
+# generate image with AdaVD and calculate metrics
+bash scripts/eval_all.sh
 ```
