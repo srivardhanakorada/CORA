@@ -61,7 +61,7 @@ pip install -r requirements.txt
     
     You can also adjust the hyper-parameters `--sigmoid_a`, `--sigmoid_b`, and `--sigmoid_c` to erase implicit  concept.
     
-    If you want to evaluate AdaVD with **your own benchmark** or **apply it to eliminate numerous concepts**, please run the following command:
+    If you want to evaluate AdaVD with **your own benchmark** or **apply it to eliminate numerous concepts** (e.g., MACE's setup), please run the following command:
     
     ```bash
     CUDA_VISIBLE_DEVICES=${gpu_id} python src/main_multi.py \
