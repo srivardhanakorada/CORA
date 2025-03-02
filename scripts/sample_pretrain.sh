@@ -1,10 +1,9 @@
 #!/bin/bash
 
-# 关联数组：任务参数
 declare -A target_concept_map
 declare -A contents_map
 
-# 定义目标概念和内容
+# Define target concepts and contents
 target_concept_map["instance"]="instance"
 target_concept_map["style"]="style"
 target_concept_map["celebrity"]="celebrity"
@@ -13,14 +12,14 @@ contents_map["instance"]="Snoopy, Mickey, Spongebob, Pikachu, Dog, Legislator"
 contents_map["style"]="Van Gogh, Picasso, Monet, Andy Warhol, Caravaggio"
 contents_map["celebrity"]="Bruce Lee, Marilyn Monroe, Melania Trump, Anne Hathaway, Tom Cruise"
 
-# 定义要使用的 GPU 索引数组
-GPU_IDX=('0' '1' '2' '3' '4' '5' '6' '7')  # 指定的 GPU 数组
-NUM_GPUS=${#GPU_IDX[@]}  # 计算 GPU 数量
+# Define the array of GPU indices to be used
+GPU_IDX=('0' '1' '2' '3' '4' '5' '6' '7') 
+NUM_GPUS=${#GPU_IDX[@]} # Calculate the number of GPUs
 
-# 初始化 GPU 分配的索引
+# Initialize the GPU allocation index
 gpu_idx=0
 
-# 函数：提交任务到指定 GPU
+# Function: Submit a task to a specified GPU
 run_task() {
   local erase_type=$1
   local gpu_id=$2
@@ -33,21 +32,21 @@ run_task() {
     --contents "${contents_map[$erase_type]}" \
     --mode 'original' \
     --num_samples 10 --batch_size 10 \
-    --save_root "data/pretrain" &  # 在后台运行任务
+    --save_root "data/pretrain" &  
 }
 
-# 遍历所有任务
+# Iterate through all tasks
 for erase_type in "instance" "style" "celebrity"; do
   run_task "$erase_type" ${GPU_IDX[$gpu_idx]}
 
-  # 更新 GPU 索引，循环使用 GPU
+  # Update the GPU index and cycle through GPUs
   gpu_idx=$(( (gpu_idx + 1) % NUM_GPUS ))
 
-  # 如果所有 GPU 都已分配，等待当前所有进程结束再继续
+  # If all GPUs have been assigned, wait for all current processes to finish before continuing续
   if [ $gpu_idx -eq 0 ]; then
-    wait  # 等待所有后台任务完成
+    wait # Wait for all background tasks to complete
   fi
 done
 
-# 等待最后一批任务完成
+# Wait for the last batch of tasks to complete
 wait
