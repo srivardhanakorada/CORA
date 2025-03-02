@@ -19,7 +19,7 @@ conda activate AdaVD
 # install pytorch
 pip install torch==2.0.1 torchvision==0.15.2
 # install other dependencies
-pip install-r requirements.txt
+pip install -r requirements.txt
 ```
 
 ### 02. Image Generation with AdaVD
