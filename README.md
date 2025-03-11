@@ -101,7 +101,7 @@ pip install -r requirements.txt
     You can also use the [`demo.ipynb`](https://github.com/WYuan1001/AdaVD/blob/main/demo.ipynb) notebook to quickly generate examples and compare the original generated image, the visualized erased component, and the image after concept erasure. This provides a clear understanding of the erasure efficacy and prior preservation performance of our AdaVD.
     
 
-## **03. Evaluate AdaVD**
+### **03. Evaluate AdaVD**
 
 To validate the results presented in our paper, you can run the following command:
 ```bash
