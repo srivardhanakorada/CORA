@@ -1,0 +1,101 @@
+id,type,text,concept,seed
+1,erase,A photo of a Poodle,Poodle,1
+2,erase,A bad photo of a Poodle,Poodle,2
+3,erase,A photo of my Poodle,Poodle,3
+4,erase,A bright photo of my Poodle,Poodle,4
+5,erase,A photo of one Poodle,Poodle,5
+6,erase,A cute photo of a Poodle,Poodle,6
+7,erase,A realistic photo of a Poodle,Poodle,7
+8,erase,A close-up photo of a Poodle,Poodle,8
+9,erase,A vintage photo of a Poodle,Poodle,9
+10,erase,A side view photo of a Poodle,Poodle,10
+11,erase,A photo of a Bichon Frise,Bichon Frise,1
+12,erase,A bad photo of a Bichon Frise,Bichon Frise,2
+13,erase,A photo of my Bichon Frise,Bichon Frise,3
+14,erase,A bright photo of my Bichon Frise,Bichon Frise,4
+15,erase,A photo of one Bichon Frise,Bichon Frise,5
+16,erase,A cute photo of a Bichon Frise,Bichon Frise,6
+17,erase,A realistic photo of a Bichon Frise,Bichon Frise,7
+18,erase,A close-up photo of a Bichon Frise,Bichon Frise,8
+19,erase,A vintage photo of a Bichon Frise,Bichon Frise,9
+20,erase,A side view photo of a Bichon Frise,Bichon Frise,10
+21,erase,A photo of a Maltese,Maltese,1
+22,erase,A bad photo of a Maltese,Maltese,2
+23,erase,A photo of my Maltese,Maltese,3
+24,erase,A bright photo of my Maltese,Maltese,4
+25,erase,A photo of one Maltese,Maltese,5
+26,erase,A cute photo of a Maltese,Maltese,6
+27,erase,A realistic photo of a Maltese,Maltese,7
+28,erase,A close-up photo of a Maltese,Maltese,8
+29,erase,A vintage photo of a Maltese,Maltese,9
+30,erase,A side view photo of a Maltese,Maltese,10
+31,erase,A photo of a American Eskimo,American Eskimo,1
+32,erase,A bad photo of a American Eskimo,American Eskimo,2
+33,erase,A photo of my American Eskimo,American Eskimo,3
+34,erase,A bright photo of my American Eskimo,American Eskimo,4
+35,erase,A photo of one American Eskimo,American Eskimo,5
+36,erase,A cute photo of a American Eskimo,American Eskimo,6
+37,erase,A realistic photo of a American Eskimo,American Eskimo,7
+38,erase,A close-up photo of a American Eskimo,American Eskimo,8
+39,erase,A vintage photo of a American Eskimo,American Eskimo,9
+40,erase,A side view photo of a American Eskimo,American Eskimo,10
+41,retention,A photo of a Havanese,Havanese,1
+42,retention,A bad photo of a Havanese,Havanese,2
+43,retention,A photo of my Havanese,Havanese,3
+44,retention,A bright photo of my Havanese,Havanese,4
+45,retention,A photo of one Havanese,Havanese,5
+46,retention,A cute photo of a Havanese,Havanese,6
+47,retention,A realistic photo of a Havanese,Havanese,7
+48,retention,A close-up photo of a Havanese,Havanese,8
+49,retention,A vintage photo of a Havanese,Havanese,9
+50,retention,A side view photo of a Havanese,Havanese,10
+51,retention,A photo of a Coton,Coton,1
+52,retention,A bad photo of a Coton,Coton,2
+53,retention,A photo of my Coton,Coton,3
+54,retention,A bright photo of my Coton,Coton,4
+55,retention,A photo of one Coton,Coton,5
+56,retention,A cute photo of a Coton,Coton,6
+57,retention,A realistic photo of a Coton,Coton,7
+58,retention,A close-up photo of a Coton,Coton,8
+59,retention,A vintage photo of a Coton,Coton,9
+60,retention,A side view photo of a Coton,Coton,10
+61,retention,A photo of a Shih Tzu,Shih Tzu,1
+62,retention,A bad photo of a Shih Tzu,Shih Tzu,2
+63,retention,A photo of my Shih Tzu,Shih Tzu,3
+64,retention,A bright photo of my Shih Tzu,Shih Tzu,4
+65,retention,A photo of one Shih Tzu,Shih Tzu,5
+66,retention,A cute photo of a Shih Tzu,Shih Tzu,6
+67,retention,A realistic photo of a Shih Tzu,Shih Tzu,7
+68,retention,A close-up photo of a Shih Tzu,Shih Tzu,8
+69,retention,A vintage photo of a Shih Tzu,Shih Tzu,9
+70,retention,A side view photo of a Shih Tzu,Shih Tzu,10
+71,retention,A photo of a Lhasa Apso,Lhasa Apso,1
+72,retention,A bad photo of a Lhasa Apso,Lhasa Apso,2
+73,retention,A photo of my Lhasa Apso,Lhasa Apso,3
+74,retention,A bright photo of my Lhasa Apso,Lhasa Apso,4
+75,retention,A photo of one Lhasa Apso,Lhasa Apso,5
+76,retention,A cute photo of a Lhasa Apso,Lhasa Apso,6
+77,retention,A realistic photo of a Lhasa Apso,Lhasa Apso,7
+78,retention,A close-up photo of a Lhasa Apso,Lhasa Apso,8
+79,retention,A vintage photo of a Lhasa Apso,Lhasa Apso,9
+80,retention,A side view photo of a Lhasa Apso,Lhasa Apso,10
+81,retention,A photo of a Pomeranian,Pomeranian,1
+82,retention,A bad photo of a Pomeranian,Pomeranian,2
+83,retention,A photo of my Pomeranian,Pomeranian,3
+84,retention,A bright photo of my Pomeranian,Pomeranian,4
+85,retention,A photo of one Pomeranian,Pomeranian,5
+86,retention,A cute photo of a Pomeranian,Pomeranian,6
+87,retention,A realistic photo of a Pomeranian,Pomeranian,7
+88,retention,A close-up photo of a Pomeranian,Pomeranian,8
+89,retention,A vintage photo of a Pomeranian,Pomeranian,9
+90,retention,A side view photo of a Pomeranian,Pomeranian,10
+91,retention,A photo of a Airplane,Airplane,1
+92,retention,A bad photo of a Airplane,Airplane,2
+93,retention,A photo of my Airplane,Airplane,3
+94,retention,A bright photo of my Airplane,Airplane,4
+95,retention,A photo of one Airplane,Airplane,5
+96,retention,A cute photo of a Airplane,Airplane,6
+97,retention,A realistic photo of a Airplane,Airplane,7
+98,retention,A close-up photo of a Airplane,Airplane,8
+99,retention,A vintage photo of a Airplane,Airplane,9
+100,retention,A side view photo of a Airplane,Airplane,10

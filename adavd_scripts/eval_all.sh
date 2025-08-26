@@ -13,7 +13,7 @@ targets_map["style"]="Van Gogh;Picasso;Monet"
 targets_map["celebrity"]="Bruce Lee;Marilyn Monroe;Melania Trump"
 
 # GPU Config
-GPU_IDX=('0' '1' '2' '3' '4' '5' '6' '7')
+GPU_IDX=('0' '1' '2')
 # ============================
 
 contents_map["instance"]="Snoopy, Mickey, Spongebob, Pikachu, Dog, Legislator"

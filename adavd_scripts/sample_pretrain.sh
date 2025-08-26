@@ -13,7 +13,7 @@ contents_map["style"]="Van Gogh, Picasso, Monet, Andy Warhol, Caravaggio"
 contents_map["celebrity"]="Bruce Lee, Marilyn Monroe, Melania Trump, Anne Hathaway, Tom Cruise"
 
 # Define the array of GPU indices to be used
-GPU_IDX=('0' '1' '2' '3' '4' '5' '6' '7') 
+GPU_IDX=('0' '1' '2') 
 NUM_GPUS=${#GPU_IDX[@]} # Calculate the number of GPUs
 
 # Initialize the GPU allocation index
