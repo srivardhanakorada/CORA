@@ -1,3 +1,6 @@
 logs
 outputs_adavd
 outputs_cora
+data/pretrain
+temp
+data/pretrain_cora
