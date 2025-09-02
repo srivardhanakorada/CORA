@@ -159,7 +159,7 @@ selected_instances = [
 
 ## Added
 simple = [
-    "a photo of {}."
+    "A photo of {}."
 ]
 
 ## Added

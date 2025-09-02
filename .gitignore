@@ -4,3 +4,7 @@ outputs_cora
 data/pretrain
 temp
 data/pretrain_cora
+outputs_temp
+outputs_np
+outputs_sld
+data/archive.zip
