@@ -199,7 +199,7 @@ def parse_args():
                     help="Force device. Omit to auto-select.")
     ap.add_argument("--out_csv", type=str, default="single_target_cs.csv")
     ap.add_argument("--out_json", type=str, default="single_target_cs.json")
-    ap.add_argument("--canonical_target", type=str, default="Donald Trump",
+    ap.add_argument("--canonical_target", type=str, default="Spider Man",
                     help='Override the derived target label (e.g., "Donald Trump").')
     ap.add_argument("--tau", type=float, default=None,
                     help="Optional CS threshold for rejection to '__other__'. Typical range 0.25–0.35 for ViT-L/14.")
