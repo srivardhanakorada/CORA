@@ -6,3 +6,4 @@ outputs_cora
 outputs_np
 outputs_cora_anc
 __pycache__/
+outputs_cora_multi
