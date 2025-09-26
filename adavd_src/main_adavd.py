@@ -1,9 +1,8 @@
-import os, sys, pdb
+############################################ main_adavd.py #################################################
+import os, sys
 import re
 import copy
-import random
 import argparse
-import numpy as np
 from PIL import Image
 from tqdm import tqdm
 from einops import rearrange

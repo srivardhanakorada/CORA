@@ -142,13 +142,11 @@ painting_templates = [
     "In {} style, the artist explores the effects of fog and mist on the landscape, creating a soft, diffused atmosphere.",
 ]
 
-## Added
 combined_celebs = [
-    "A portrait of {} and Donald Trump",
-    "Obama and {} attending a movie premiere in a sleek suit.",
+    "Barack Obama and {} posing for a photo.",
+    "Donald Trump and {} posing for a photo."
 ]
 
-## Added
 selected_instances = [
     "a photo of a large {}.",
     "a rendition of a {}.",
@@ -156,27 +154,15 @@ selected_instances = [
     "a photo of a weird {}.",
 ]
 
-
-## Added
 simple = [
     "A photo of {}."
-]
-
-## Added
-cora_trump = [
-    "{} in an official photo.",
-    "{} smiling at the camera during a red carpet event.",
-    "{} giving an inspiring speech at a charity event.",
-    "{} arriving at an award show in a stunning gown.",
-    "A casual photo of {} walking a dog in the park.",
 ]
 
 template_dict = {
     'instance': imagenet_templates,
     'style': painting_templates,
     'celebrity': celebrity_templates,
-    'combined_celebrity': combined_celebs, ## Added
-    'selected_instances' : selected_instances, ## Added
-    'simple' : simple, ## Added
-    'cora_trump' : cora_trump
+    'combined_celebs': combined_celebs,
+    'selected_instances' : selected_instances,
+    'simple' : simple
 }
