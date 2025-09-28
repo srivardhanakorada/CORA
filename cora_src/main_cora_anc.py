@@ -494,6 +494,7 @@ def main():
     parser.add_argument("--tau", type=float, default=0.1)
     parser.add_argument("--debug", action="store_true")
     parser.add_argument("--contents", type=str, default="")
+    parser.add_argument("--save_path", type=str, required=True)
     # Performance toggles
     parser.add_argument("--xformers", action="store_true", help="Enable xFormers mem-efficient attention if available")
     parser.add_argument("--compile", action="store_true", help="torch.compile the UNet (PyTorch 2.0+)")
@@ -621,7 +622,8 @@ def main():
                     )
 
                 # ---- Save ----
-                save_path = os.path.join(args.save_root, args.target_concept.replace(", ", "_"), concept)
+                # save_path = os.path.join(args.save_root, args.target_concept.replace(", ", "_"), concept)
+                save_path = args.save_path
                 for mode in mode_list:
                     os.makedirs(os.path.join(save_path, mode), exist_ok=True)
                 if len(mode_list) > 1:

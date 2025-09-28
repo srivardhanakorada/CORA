@@ -1,0 +1,19 @@
+nohup: ignoring input
+
+===== Results =====
+Target: Chris Evans
+Intended replacement: Chris Hemsworth
+Neutral anchor: an actor
+Unrelated prompts: ['Sebastian Stan', 'Tom Hiddleston', 'Sachin Tendulkar', 'Anne Hathaway', 'Bill Gates']
+
+-- Intended run --
+Ē: 0.7395
+P̄: 0.9962
+R̄: 0.3342
+EOS@Intended: 0.8489
+RAS: 0.5610
+
+-- Neutral run --
+Ē: 0.7322
+P̄: 0.9959
+EOS@Neutral: 0.8439

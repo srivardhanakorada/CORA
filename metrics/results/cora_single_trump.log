@@ -1,0 +1,19 @@
+nohup: ignoring input
+
+===== Results =====
+Target: Donald Trump
+Intended replacement: Tom Cruise
+Neutral anchor: a celebrity
+Unrelated prompts: ['Elon Musk', 'Barack Obama', 'Sachin Tendulkar', 'Anne Hathaway', 'Bill Gates']
+
+-- Intended run --
+Ē: 0.8112
+P̄: 0.9972
+R̄: 0.2993
+EOS@Intended: 0.8946
+RAS: 0.5380
+
+-- Neutral run --
+Ē: 0.8046
+P̄: 0.9974
+EOS@Neutral: 0.8907
