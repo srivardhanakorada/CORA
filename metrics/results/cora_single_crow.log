@@ -1,0 +1,19 @@
+nohup: ignoring input
+
+===== Results =====
+Target: Crow
+Intended replacement: Eagle
+Neutral anchor: an animal
+Unrelated prompts: ['Raven', 'Vulture', 'Parrot', 'Sparrow']
+
+-- Intended run --
+Ē: 0.6812
+P̄: 0.9918
+R̄: 0.3013
+EOS@Intended: 0.8076
+RAS: 0.5176
+
+-- Neutral run --
+Ē: 0.6814
+P̄: 0.9895
+EOS@Neutral: 0.8070

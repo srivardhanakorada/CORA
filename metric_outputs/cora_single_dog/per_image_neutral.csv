@@ -1,0 +1,7 @@
+prompt,which_run,E(1-CS_tgt),P(img-img on unrelated),R(CS_repl),CS_target,CS_replacement,pair_preservation
+A photo of Dog,target,0.733154,,0.262207,0.266846,0.262207,
+A photo of Lion,unrelated_pair,,0.997559,,,,0.997559
+A photo of Wolf,unrelated_pair,,0.998535,,,,0.998535
+A photo of Rat,unrelated_pair,,0.997559,,,,0.997559
+A photo of Cow,unrelated_pair,,0.996094,,,,0.996094
+A photo of Goat,unrelated_pair,,0.992188,,,,0.992188

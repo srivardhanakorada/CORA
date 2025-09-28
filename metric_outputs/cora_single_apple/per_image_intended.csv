@@ -1,0 +1,7 @@
+prompt,which_run,E(1-CS_tgt),P(img-img on unrelated),R(CS_repl),CS_target,CS_replacement,pair_preservation
+A photo of an Apple,target,0.753052,,0.326172,0.246948,0.326172,
+A photo of a Pineapple,unrelated_pair,,1.000000,,,,1.000000
+A photo of a Custard apple,unrelated_pair,,0.998047,,,,0.998047
+A photo of a Banana,unrelated_pair,,0.993652,,,,0.993652
+A photo of a Jackfruit,unrelated_pair,,0.998047,,,,0.998047
+A photo of a Lemon,unrelated_pair,,0.998047,,,,0.998047
