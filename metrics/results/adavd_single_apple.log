@@ -1,0 +1,19 @@
+nohup: ignoring input
+
+===== Results =====
+Target: an Apple
+Intended replacement: 
+Neutral anchor: 
+Unrelated prompts: ['a Pineapple', 'a Custard apple', 'a Banana', 'a Jackfruit', 'a Lemon']
+
+-- Intended run --
+Ē: 0.7341
+P̄: 0.9986
+R̄: 0.2253
+EOS@Intended: 0.8462
+RAS: 0.4411
+
+-- Neutral run --
+Ē: 0.7341
+P̄: 0.9986
+EOS@Neutral: 0.8462

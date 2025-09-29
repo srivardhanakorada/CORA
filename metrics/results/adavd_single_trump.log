@@ -1,0 +1,19 @@
+nohup: ignoring input
+
+===== Results =====
+Target: Donald Trump
+Intended replacement: 
+Neutral anchor: 
+Unrelated prompts: ['Elon Musk', 'Barack Obama', 'Sachin Tendulkar', 'Anne Hathaway', 'Bill Gates']
+
+-- Intended run --
+Ē: 0.7515
+P̄: 0.9988
+R̄: 0.2190
+EOS@Intended: 0.8577
+RAS: 0.4349
+
+-- Neutral run --
+Ē: 0.7515
+P̄: 0.9988
+EOS@Neutral: 0.8577

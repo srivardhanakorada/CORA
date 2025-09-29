@@ -1,0 +1,19 @@
+nohup: ignoring input
+
+===== Results =====
+Target: Dog
+Intended replacement: 
+Neutral anchor: 
+Unrelated prompts: ['Lion', 'Wolf', 'Rat', 'Cow', 'Goat']
+
+-- Intended run --
+Ē: 0.7784
+P̄: 0.9994
+R̄: 0.2252
+EOS@Intended: 0.8752
+RAS: 0.4461
+
+-- Neutral run --
+Ē: 0.7784
+P̄: 0.9994
+EOS@Neutral: 0.8752

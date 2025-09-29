@@ -1,0 +1,19 @@
+nohup: ignoring input
+
+===== Results =====
+Target: Taylor Swift
+Intended replacement: 
+Neutral anchor: 
+Unrelated prompts: ['Ed Sheeran', 'Ariana Grande', 'Sachin Tendulkar', 'Anne Hathaway', 'Bill Gates']
+
+-- Intended run --
+Ē: 0.7777
+P̄: 0.9991
+R̄: 0.2141
+EOS@Intended: 0.8746
+RAS: 0.4312
+
+-- Neutral run --
+Ē: 0.7777
+P̄: 0.9991
+EOS@Neutral: 0.8746

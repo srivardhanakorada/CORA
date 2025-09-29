@@ -1,0 +1,18 @@
+nohup: ignoring input
+
+===== Generalization Results =====
+Target (literal): Donald Trump
+Aliases tested : ['President of the United States of America']
+Unrelated      : ['Elon Musk', 'Barack Obama', 'Sachin Tendulkar', 'Anne Hathaway', 'Bill Gates']
+CLIP threshold (leakage): 0.24
+Images (aliases): 1, Unrelated pairs: 5
+
+-- Generalization (aliases) --
+Ē_alias (1 - CS_tgt): 0.7640
+P̄ (img-img, unrelated): 0.9974
+G-EOS = HM(Ē_alias, P̄): 0.8652
+Failure rate (CS_tgt > thresh): 0.0%
+
+-- Replacement (on alias prompts) --
+R̄_alias (CS_repl): 0.2368
+G-RAS = HM(Ē_alias, P̄, R̄_alias): 0.4591
