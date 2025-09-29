@@ -477,7 +477,6 @@ def decode_latents_batch(vae, latents_list: List[torch.Tensor]) -> List[Image.Im
 @torch.no_grad()
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--save_root", type=str, default="")
     parser.add_argument("--sd_ckpt", type=str, default="CompVis/stable-diffusion-v1-4")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--mode", type=str, default="original,erase")  # original, erase

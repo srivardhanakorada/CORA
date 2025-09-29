@@ -3,13 +3,13 @@ import os, sys
 import re
 import copy
 import argparse
-from PIL import Image
-from tqdm import tqdm
-from einops import rearrange
+from PIL import Image #type:ignore
+from tqdm import tqdm #type:ignore
+from einops import rearrange #type:ignore
 
-import torch
-from torch import nn
-from diffusers import DiffusionPipeline, DPMSolverMultistepScheduler
+import torch #type:ignore
+from torch import nn #type:ignore
+from diffusers import DiffusionPipeline, DPMSolverMultistepScheduler #type:ignore
 
 from template import template_dict
 from utils import *
@@ -289,7 +289,6 @@ def main():
 
     parser = argparse.ArgumentParser()
     # Base Config
-    parser.add_argument('--save_root', type=str, default='')
     parser.add_argument('--sd_ckpt', type=str, default="CompVis/stable-diffusion-v1-4")
     parser.add_argument('--seed', type=int, default=0)
     # Sampling Config
@@ -308,23 +307,30 @@ def main():
     parser.add_argument('--sigmoid_b', type=float, default=0.93)
     parser.add_argument('--sigmoid_c', type=float, default=2)
     parser.add_argument('--record_type', type=str, default='values', help="keys, values")
+    parser.add_argument("--save_path", type=str, required=True)
     args = parser.parse_args()
     assert args.num_samples >= args.batch_size
 
     bs = args.batch_size
     mode_list = args.mode.replace(' ', '').split(',')
 
-    # region [If certain concept is already sampled, then skip it.]
-    concept_list, concept_list_tmp = [], [item.strip() for item in args.contents.split(',')]
-    if 'retain' in mode_list:
-        for concept in concept_list_tmp:
-            check_path = os.path.join(args.save_root, args.target_concept.replace(', ', '_'), concept, 'retain')
-            os.makedirs(check_path, exist_ok=True)
-            if len(os.listdir(check_path)) != len(template_dict[args.erase_type]) * 10:
-                concept_list.append(concept)
-    else:
-        concept_list = concept_list_tmp
-    if len(concept_list) == 0: sys.exit()
+    # # region [If certain concept is already sampled, then skip it.]
+    # concept_list, concept_list_tmp = [], [item.strip() for item in args.contents.split(',')]
+    # if 'retain' in mode_list:
+    #     for concept in concept_list_tmp:
+    #         check_path = os.path.join(args.save_root, args.target_concept.replace(', ', '_'), concept, 'retain')
+    #         os.makedirs(check_path, exist_ok=True)
+    #         if len(os.listdir(check_path)) != len(template_dict[args.erase_type]) * 10:
+    #             concept_list.append(concept)
+    # else:
+    #     concept_list = concept_list_tmp
+    # if len(concept_list) == 0: sys.exit()
+    # # endregion
+
+    # region [Always regenerate: do not check disk, do not skip]
+    concept_list = [item.strip() for item in args.contents.split(',')]
+    if len(concept_list) == 0:
+        sys.exit()
     # endregion
 
     # region [Prepare Models]
@@ -402,9 +408,11 @@ def main():
                                                guidance_scale=args.guidance_scale, 
                                                desc=f"{prompt} | retain")
                     
-                save_path = os.path.join(args.save_root, args.target_concept.replace(', ', '_'), concept)
-                for mode in mode_list: os.makedirs(os.path.join(save_path, mode), exist_ok=True)
-                if len(mode_list) > 1: os.makedirs(os.path.join(save_path, 'combine'), exist_ok=True)
+                save_path = args.save_path
+                for mode in mode_list: 
+                    os.makedirs(os.path.join(save_path, mode), exist_ok=True)
+                if len(mode_list) > 1: 
+                    os.makedirs(os.path.join(save_path, 'combine'), exist_ok=True)
                 
                 # Decode and process images
                 decoded_imgs = {
