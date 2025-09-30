@@ -1,8 +1,6 @@
 #!/bin/bash
 set -Eeuo pipefail
 
-mkdir -p metrics/results
-
 CUDA_VISIBLE_DEVICES=0 nohup python -W ignore metrics/measure_distance.py \
   --cora_root outputs_cora_anc \
   --adavd_root outputs_adavd \

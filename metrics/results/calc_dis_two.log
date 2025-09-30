@@ -1,0 +1,5 @@
+nohup: ignoring input
+[FID] A_photo_of_Adam_Driver: FID(SRC→TGT)=86.356689 invFID=0.011447 (Nsrc=100, Ntgt=100)
+[FID] A_photo_of_Adriana_Lima: FID(SRC→TGT)=82.143997 invFID=0.012027 (Nsrc=100, Ntgt=100)
+
+[Done] Wrote: metrics/fid_summary_two.csv
