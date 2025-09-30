@@ -1,46 +1,65 @@
 #!/bin/bash
 set -Eeuo pipefail
 
-mkdir -p metrics/results
+# ## thresholding
+# nohup python metrics/measure_threshold_for_generalization.py \
+#       --folder "outputs_cora_single/Donald Trump/neut/original" \
+#       --targets "Donald Trump" \
+#       --non_targets "Barack Obama, Elon Musk" \
+#       --text "Donald Trump" \
+#       --recall 0.95 \
+#       --save_csv results/clip_trump_scores.csv > results/log_trump.log 2>&1 &
 
-# ---------- Job 1: NEUTRAL ----------
-echo "[`date`] Launching NEUTRAL generalization run..."
-CUDA_VISIBLE_DEVICES=0 nohup python -W ignore metrics/measure_generalization.py \
-  --original_dir 'outputs_cora_anc/Donald Trump/neut/original' \
-  --edited_dir   'outputs_cora_anc/Donald Trump/neut/erase' \
-  --target "Donald Trump" \
-  --aliases "President of the United States of America" \
-  --replacement "a celebrity" \
-  --r_report \
-  --unrelated "Elon Musk, Barack Obama, Sachin Tendulkar, Anne Hathaway, Bill Gates" \
-  --e_thresh 0.24 \
-  --out_csv metrics/results/per_image_generalization_neut.csv \
-  > metrics/results/cora_generalization_trump_neut.log 2>&1 &
+# ## actual measure
+# nohup python -W ignore metrics/measure_generalization.py \
+#       --folder "outputs_cora_single/Donald Trump/neut/original" \
+#       --concept "President of the United States of America" \
+#       --threshold 0.2110
 
-PID1=$!
-echo "[`date`] NEUTRAL PID: $PID1 (logs: metrics/results/cora_generalization_trump_neut.log)"
+# ## actual measure
+# nohup python -W ignore metrics/measure_generalization.py \
+#       --folder "outputs_cora_single/Donald Trump/neut/erase" \
+#       --concept "President of the United States of America" \
+#       --threshold 0.2110
 
-# Wait for Job 1 to finish
-wait "$PID1"
-echo "[`date`] NEUTRAL run finished."
+# ## thresholding
+# nohup python metrics/measure_threshold_for_generalization.py \
+#       --folder "outputs_cora_single/Dog/neut/original" \
+#       --targets "Dog" \
+#       --non_targets "Cat, Lion" \
+#       --text "Dog" \
+#       --recall 0.95 \
+#       --save_csv results/clip_trump_dog.csv > results/log_dog.log 2>&1 &
 
-# ---------- Job 2: INTENDED ----------
-echo "[`date`] Launching INTENDED generalization run..."
-CUDA_VISIBLE_DEVICES=0 nohup python -W ignore metrics/measure_generalization.py \
-  --original_dir 'outputs_cora_anc/Donald Trump/int/original' \
-  --edited_dir   'outputs_cora_anc/Donald Trump/int/erase' \
-  --target "Donald Trump" \
-  --aliases "President of the United States of America" \
-  --replacement "Tom Cruise" \
-  --r_report \
-  --unrelated "Elon Musk, Barack Obama, Sachin Tendulkar, Anne Hathaway, Bill Gates" \
-  --e_thresh 0.24 \
-  --out_csv metrics/results/per_image_generalization_int.csv \
-  > metrics/results/cora_generalization_trump_int.log 2>&1 &
+## actual measure
+# nohup python -W ignore metrics/measure_generalization.py \
+#       --folder "outputs_cora_anc/Dog/gen/original" \
+#       --concept "mans best friend" \
+#       --threshold 0.1908
 
-PID2=$!
-echo "[`date`] INTENDED PID: $PID2 (logs: metrics/results/cora_generalization_trump_int.log)"
+# ## actual measure
+# nohup python -W ignore metrics/measure_generalization.py \
+#       --folder "outputs_cora_anc/Dog/gen/erase" \
+#       --concept "mans best friend" \
+#       --threshold 0.1908
 
-# (Optional) Wait for Job 2 as well; comment out if you want the script to exit immediately.
-wait "$PID2"
-echo "[`date`] INTENDED run finished. All done."
+## thresholding
+# nohup python metrics/measure_threshold_for_generalization.py \
+#       --folder "outputs_cora_anc/Spider/gen/original" \
+#       --targets "Spider Man" \
+#       --non_targets "Venom" \
+#       --text "Spider Man" \
+#       --recall 0.95 \
+#       --save_csv results/clip_trump_spider.csv > results/log_spider.log 2>&1 &
+
+## actual measure
+# nohup python -W ignore metrics/measure_generalization.py \
+#       --folder "outputs_cora_anc/Spider/gen/original" \
+#       --concept "Marvel superhero who got bitten by a radio active spider wearing red and blue suit" \
+#       --threshold 0.2293
+
+# ## actual measure
+nohup python -W ignore metrics/measure_generalization.py \
+      --folder "outputs_cora_anc/Spider/gen/erase" \
+      --concept "Marvel superhero who got bitten by a radio active spider wearing red and blue suit" \
+      --threshold 0.2293

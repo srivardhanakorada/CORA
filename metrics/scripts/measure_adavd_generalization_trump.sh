@@ -1,23 +1,23 @@
 #!/bin/bash
 set -Eeuo pipefail
 
-mkdir -p metrics/results
+## thresholding
+# nohup python metrics/measure_threshold_for_generalization.py \
+#       --folder "outputs_cora_single/Donald Trump/neut/original" \
+#       --targets "Donald Trump" \
+#       --non_targets "Barack Obama, Elon Musk" \
+#       --text "Donald Trump" \
+#       --recall 0.95 \
+#       --save_csv results/clip_trump_scores.csv > results/log_trump.log 2>&1 &
 
-# ---------- Job 1: NEUTRAL ----------
-echo "[`date`] Launching NEUTRAL generalization run..."
-CUDA_VISIBLE_DEVICES=0 nohup python -W ignore metrics/measure_generalization.py \
-  --original_dir 'outputs_adavd/Donald Trump/original' \
-  --edited_dir   'outputs_adavd/Donald Trump/retain' \
-  --target "Donald Trump" \
-  --aliases "President of the United States of America" \
-  --replacement "" \
-  --r_report \
-  --unrelated "Elon Musk, Barack Obama, Sachin Tendulkar, Anne Hathaway, Bill Gates" \
-  --e_thresh 0.27 \
-  --out_csv metrics/results/per_image_generalization.csv \
-  > metrics/results/adavd_generalization_trump.log 2>&1 &
+# ## actual measure
+# nohup python -W ignore metrics/measure_generalization.py \
+#       --folder "outputs_adavd_single/Donald Trump/original" \
+#       --concept "President of the United States of America" \
+#       --threshold 0.2110
 
-PID1=$!
-# Wait for Job 1 to finish
-wait "$PID1"
-echo "[`date`] Run finished."
+## actual measure
+nohup python -W ignore metrics/measure_generalization.py \
+      --folder "outputs_adavd_single/Donald Trump/retain" \
+      --concept "President of the United States of America" \
+      --threshold 0.2110
