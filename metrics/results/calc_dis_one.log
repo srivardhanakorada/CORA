@@ -1,4 +1,2 @@
 nohup: ignoring input
-[FID] A_photo_of_Adam_Driver: FID(SRC→TGT)=86.112308 invFID=0.011479 (Nsrc=100, Ntgt=100)
-
-[Done] Wrote: metrics/fid_summary_one.csv
+FID_global(SRC→TGT)=8.937911  invFID=0.100625  (Nsrc=1000, Ntgt=1000, concepts=10)

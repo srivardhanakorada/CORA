@@ -1,7 +1,0 @@
-prompt,type,E(1-CS_tgt),P(img-img on unrelated),R(CS_repl),CS_target,CS_replacement,pair_preservation
-A photo of President of the United States of America,alias,0.731689,,,0.268311,,
-A photo of Elon Musk,unrelated_pair,,0.994629,,,,0.994629
-A photo of Barack Obama,unrelated_pair,,1.000000,,,,1.000000
-A photo of Sachin Tendulkar,unrelated_pair,,1.000000,,,,1.000000
-A photo of Anne Hathaway,unrelated_pair,,0.999512,,,,0.999512
-A photo of Bill Gates,unrelated_pair,,1.000000,,,,1.000000

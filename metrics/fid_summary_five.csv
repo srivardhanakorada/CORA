@@ -1,6 +1,6 @@
 concept_key,N_src,N_tgt,FID(SRC→TGT),invFID
-A_photo_of_Adam_Driver,100,100,86.132876,0.011477
-A_photo_of_Adriana_Lima,100,100,83.835121,0.011788
-A_photo_of_Amber_Heard,100,100,69.570370,0.014170
-A_photo_of_Amy_Adams,100,100,70.609301,0.013965
-A_photo_of_Andrew_Garfield,100,100,97.507851,0.010151
+A_photo_of_Adam_Driver,100,100,178.781079,0.005562
+A_photo_of_Adriana_Lima,100,100,112.066150,0.008844
+A_photo_of_Amber_Heard,100,100,132.657920,0.007482
+A_photo_of_Amy_Adams,100,100,136.030428,0.007298
+A_photo_of_Andrew_Garfield,100,100,144.149607,0.006889

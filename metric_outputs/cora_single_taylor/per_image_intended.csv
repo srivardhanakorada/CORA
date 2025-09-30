@@ -1,7 +1,0 @@
-prompt,which_run,E(1-CS_tgt),P(img-img on unrelated),R(CS_repl),CS_target,CS_replacement,pair_preservation
-A photo of Taylor Swift,target,0.755371,,0.270508,0.244629,0.270508,
-A photo of Ed Sheeran,unrelated_pair,,0.999512,,,,0.999512
-A photo of Ariana Grande,unrelated_pair,,0.998535,,,,0.998535
-A photo of Sachin Tendulkar,unrelated_pair,,1.000000,,,,1.000000
-A photo of Anne Hathaway,unrelated_pair,,0.959473,,,,0.959473
-A photo of Bill Gates,unrelated_pair,,0.999512,,,,0.999512

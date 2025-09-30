@@ -1,8 +1,2 @@
 nohup: ignoring input
-[FID] A_photo_of_Adam_Driver: FID(SRC→TGT)=86.132876 invFID=0.011477 (Nsrc=100, Ntgt=100)
-[FID] A_photo_of_Adriana_Lima: FID(SRC→TGT)=83.835121 invFID=0.011788 (Nsrc=100, Ntgt=100)
-[FID] A_photo_of_Amber_Heard: FID(SRC→TGT)=69.570370 invFID=0.014170 (Nsrc=100, Ntgt=100)
-[FID] A_photo_of_Amy_Adams: FID(SRC→TGT)=70.609301 invFID=0.013965 (Nsrc=100, Ntgt=100)
-[FID] A_photo_of_Andrew_Garfield: FID(SRC→TGT)=97.507851 invFID=0.010151 (Nsrc=100, Ntgt=100)
-
-[Done] Wrote: metrics/fid_summary_five.csv
+FID_global(SRC→TGT)=33.186829  invFID=0.029251  (Nsrc=1000, Ntgt=1000, concepts=10)

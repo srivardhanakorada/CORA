@@ -1,7 +1,0 @@
-prompt,which_run,E(1-CS_tgt),P(img-img on unrelated),R(CS_repl),CS_target,CS_replacement,pair_preservation
-A photo of an Apple,target,0.692139,,0.274414,0.307861,0.274414,
-A photo of a Pineapple,unrelated_pair,,1.000000,,,,1.000000
-A photo of a Custard apple,unrelated_pair,,0.997070,,,,0.997070
-A photo of a Banana,unrelated_pair,,0.999023,,,,0.999023
-A photo of a Jackfruit,unrelated_pair,,0.999512,,,,0.999512
-A photo of a Lemon,unrelated_pair,,0.998535,,,,0.998535
