@@ -506,7 +506,7 @@ def main():
     parser.add_argument("--single_anchor_mode", action="store_true",
                         help="Use CSV (type,name); erase all targets; sample ONLY targets + non-targets (preserves excluded from sampling); build preserves from CSV preserves.")
     parser.add_argument("--concepts_csv", type=str, default="")
-    parser.add_argument("--single_anchor_text", type=str, default="an animal")
+    parser.add_argument("--single_anchor_text", type=str, default="a fruit")
 
     args = parser.parse_args()
 

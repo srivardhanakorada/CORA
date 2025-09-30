@@ -17,7 +17,7 @@ CUDA_VISIBLE_DEVICES=1 nohup \
     --erase_type simple \
     --concepts_csv "$CSV" \
     --single_anchor_mode \
-    --single_anchor_text "an animal" \
+    --single_anchor_text "an Orange" \
     --beta 0.5 --tau 0.1 \
     --num_samples 100 --batch_size 10 --total_timesteps 30 \
     --guidance_scale 7.5 \
