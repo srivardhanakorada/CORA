@@ -63,11 +63,10 @@ class AttnProcessor():
         return c / (1 + torch.exp(-a * (x - b)))
 
     def cal_ortho_decomp(self, target_value, pro_record, ortho_basis=None, project_matrix=None): 
-
+        device = pro_record.device
         if ortho_basis is None and project_matrix is None:
             tar_record_ = target_value[0].permute(1, 0, 2).reshape(77, -1) # [77, 640]
             pro_record_ = pro_record.permute(1, 0, 2).reshape(77, -1) # [77, 640]
-            device = pro_record.device
             dot1 = (tar_record_ * pro_record_).sum(-1)
             dot2 = (tar_record_ * tar_record_).sum(-1)
             if self.token_sim:
@@ -80,7 +79,6 @@ class AttnProcessor():
             weight[0].fill_(0)
             era_record = weight.unsqueeze(0).unsqueeze(-1) * tar_record_.view((77, 16, -1)).permute(1, 0, 2)
         else:
-            device = pro_record.device
             tar_record_ = rearrange(target_value, 'b h l d -> l b (h d)') # [77, num_concepts, 640]
             pro_record_ = rearrange(pro_record, 'h l d -> l (h d)').unsqueeze(1) # [77, 1, 640]
             dot1 = (ortho_basis * pro_record_).sum(-1)
@@ -376,7 +374,8 @@ def main():
 
             if 'original' in mode_list:
                 unet_original = copy.deepcopy(unet)
-                unet_retain = set_attenprocessor(unet_original, atten_type='original', record=False)
+                # unet_retain = set_attenprocessor(unet_original, atten_type='original', record=False)4
+                unet_original = set_attenprocessor(unet_original, atten_type='original', record=False)
                 save_images['original'] = diffusion(unet=unet_original, scheduler=pipe.scheduler, 
                                                 latents=latent, start_timesteps=0, 
                                                 text_embeddings=torch.cat([uncond_encoding] * bs + [embedding], dim=0), 

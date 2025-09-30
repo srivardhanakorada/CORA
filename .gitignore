@@ -9,3 +9,6 @@ __pycache__/
 outputs_cora_multi_small
 outputs_cora_multi_full
 outputs_cora_multi
+outputs_adavd_single
+outputs_cora_single
+outputs_adavd_multi_small

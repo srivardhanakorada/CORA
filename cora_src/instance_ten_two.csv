@@ -1,0 +1,16 @@
+type,name
+target,Dog
+target,Pig
+non-target,Fox
+non-target,Snake
+non-target,Crocodile
+non-target,Elephant
+non-target,Cat
+non-target,Hyena
+non-target,Cow
+non-target,Buffalo
+preserve,Lion
+preserve,Wolf
+preserve,Tiger
+preserve,Cheetah
+preserve,Bull
