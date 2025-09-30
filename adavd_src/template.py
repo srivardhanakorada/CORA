@@ -143,8 +143,9 @@ painting_templates = [
 ]
 
 combined_celebs = [
-    "Barack Obama and {} posing for a photo.",
-    "Donald Trump and {} posing for a photo."
+    "A photo of Barack Obama and {}.",
+    "A photo of Donald Trump and {}.",
+    "A photo of {} and Donald Trump."
 ]
 
 selected_instances = [
