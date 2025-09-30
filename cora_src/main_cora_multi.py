@@ -1,5 +1,9 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import os
 import re
+import csv
 import copy
 import argparse
 from typing import Dict, List, Tuple, Optional, Any
@@ -14,20 +18,26 @@ from template import template_dict
 from utils import *  # seed_everything, get_token, get_textencoding, get_eot_idx, get_spread_embedding, process_img
 
 # ============================================================
-# Multi-Concept CORA with Per-Target One-Shot Anchor Selection
-# - Recording path identical to your single-concept version
-# - Precompute builds (B_pad, U_pad, A_pad) per module & token
-# - Runtime is a single vectorized einsum update over all targets
+# Multi-Concept CORA
+# Modes:
+#  (A) Legacy per-target pools
+#  (B) Single-anchor CSV mode:
+#      - erase all CSV targets
+#      - sample ONLY targets + non-targets (preserves are EXCLUDED from sampling)
+#      - build preserve projector from CSV 'preserve' rows
+#
+# Saving:
+#  - Uses a SINGLE output directory via --save_path
+#  - Images saved into: <save_path>/<mode>/   (and <save_path>/combine/ if both modes)
+#  - Filenames include prompt slug for uniqueness
 # ============================================================
 
 # ---------------------------- shape utils ----------------------------
 def _to_bh_sd(x: torch.Tensor, batch: int, heads: int) -> torch.Tensor:
-    # [B*H, S, D] -> [B, H, S, D]
-    return x.view(batch, heads, x.size(1), x.size(2))
+    return x.view(batch, heads, x.size(1), x.size(2))  # [B*H, S, D] -> [B, H, S, D]
 
 def _hsd_to_flat_token(x_hsd: torch.Tensor) -> torch.Tensor:
-    # [H,S,D] -> [S, H*D]
-    H, S, D = x_hsd.shape
+    H, S, D = x_hsd.shape  # [H,S,D] -> [S, H*D]
     return x_hsd.permute(1, 0, 2).contiguous().view(S, H * D)
 
 # ---------------------------- recording ----------------------------
@@ -42,34 +52,27 @@ def record_concept_maps(unet, pipe, concept_text: str, guidance_scale: float):
 
     uncond = get_textencoding(get_token("", tokenizer), text_encoder).to(device, dtype=dtype)
 
-    # Install a temporary recorder on attn2 only
-    rec_unet = set_attenprocessor(
-        copy.deepcopy(unet), atten_type="original", record=True, only_cross=True
-    )
+    rec_unet = set_attenprocessor(copy.deepcopy(unet), atten_type="original", record=True, only_cross=True)
 
     vis_map = {"values": {}}
-
     scheduler = copy.deepcopy(pipe.scheduler)
     scheduler.set_timesteps(1)
 
     latents = torch.zeros(1, 4, 64, 64, device=device, dtype=dtype)
     text_embeddings = torch.cat([uncond, spread], dim=0)
 
-    # Single step, just to collect per-module value tensors
     latent_model_input = torch.cat([latents] * 2)
     latent_model_input = scheduler.scale_model_input(latent_model_input, scheduler.timesteps[0])
     _ = rec_unet(latent_model_input, scheduler.timesteps[0], encoder_hidden_states=text_embeddings).sample
 
-    # Scrape records from processors
     for proc in rec_unet.attn_processors.values():
         if hasattr(proc, "records"):
             for k, v in proc.records.get("values", {}).items():
                 if k not in vis_map["values"]:
                     vis_map["values"][k] = v  # (value, heads, batch)
-
     return vis_map
 
-# ---------------------------- multi-precompute ----------------------------
+# ---------------------------- build params ----------------------------
 @torch.no_grad()
 def build_cora_params_multi(
     records_bundle: Dict[str, Any],
@@ -77,20 +80,14 @@ def build_cora_params_multi(
     dtype,
 ) -> Tuple[Dict[str, Dict[str, torch.Tensor]], List[int], List[List[float]]]:
     """
-    records_bundle["values"] must contain:
-      - "targets":  [ {mod: (value, heads, batch)}, ... ]             # R targets
-      - "anchor_pools": [ [ {mod:(value,heads,batch)}, ... ], ... ]   # list length R; each is a list of candidates (M_r)
-      - "preserve": [ {mod:(value,heads,batch)}, ... ]                # K preserves (can be K=0)
-
+    records_bundle["values"]:
+      - "targets":      [ {mod: (value, heads, batch)}, ... ]           # len R
+      - "anchor_pools": [ [ {mod:(value,heads,batch)}, ... ], ... ]     # len R; each len M_r
+      - "preserve":     [ {mod:(value,heads,batch)}, ... ]              # len K (K can be 0)
     Returns:
-      params: dict per-module with:
-        {
-          "B_pad": [S,HD,K],     # orthonormal preserve basis per token (zero-padded to K)
-          "U_pad": [S,HD,R],     # orthonormal target basis per token
-          "A_pad": [S,HD,R],     # chosen anchors per target, orthogonal to U_pad
-        }
-      chosen_idxs:  List[int] of length R with chosen anchor index per target
-      scores:       List[List[float]] energy scores per target (length R), each list has M_r floats
+      per-module params: {"B_pad":[S,HD,K], "U_pad":[S,HD,R], "A_pad":[S,HD,R]}
+      chosen_idxs: anchor choice per target
+      scores_all: per-target candidate energies
     """
     vals = records_bundle.get("values", {})
     tgt_maps: List[Dict[str, Tuple[torch.Tensor, int, int]]] = vals["targets"]
@@ -99,9 +96,8 @@ def build_cora_params_multi(
 
     R = len(tgt_maps)
     assert R >= 1, "At least one target required."
-    assert len(pools) == R, "anchor_pools must align with targets"
+    assert len(pools) == R, "anchor_pools must align with targets."
 
-    # Intersection of modules across everything
     module_sets = [set(tgt_maps[r].keys()) for r in range(R)]
     for r in range(R):
         for cand in pools[r]:
@@ -111,81 +107,44 @@ def build_cora_params_multi(
     modules = sorted(set.intersection(*module_sets)) if module_sets else []
 
     K = len(pres_list_maps)
-
-    chosen_idxs: List[int] = [-1] * R
-    scores_all: List[List[float]] = [[] for _ in range(R)]
     out: Dict[str, Dict[str, torch.Tensor]] = {}
 
     for mod in modules:
-        # ---------- gather target & preserve tensors for this module ----------
-        # Targets: [S,HD] each
+        # Targets -> flats
         t_flats = []
-        t_S = None
-        t_HD = None
-
-        # Build preserves basis per token
-        # First stack raw preserve columns [S,HD,K] then per-token QR
-        # If K==0, B_pad stays zeros
-        B_pad = None
-
-        # Prepare preserves
-        if K > 0:
-            # initialize [S,HD,K] in fp32
-            # We'll get S,HD from first available map
-            # To get S,HD: peek from first present preserve or from first target below
-            any_pres = None
-            for m in pres_list_maps:
-                if mod in m:
-                    any_pres = m[mod]
-                    break
-            if any_pres is not None:
-                p_val0, h_p0, b_p0 = any_pres
-                p0_bhsd = _to_bh_sd(p_val0, b_p0, h_p0)
-                p0_idx = 1 if p0_bhsd.size(0) > 1 else 0
-                p0_hsd = p0_bhsd[p0_idx]
-                p0_flat = _hsd_to_flat_token(p0_hsd).to(torch.float32)
-                S, HD = p0_flat.shape
-            else:
-                # will infer from first target below
-                S = HD = None
-
-        # Collect target flats and infer S,HD if needed
-        S = None
-        HD = None
+        S = HD = None
         for r in range(R):
             t_val, t_heads, t_batch = tgt_maps[r][mod]
             t_bhsd = _to_bh_sd(t_val, t_batch, t_heads)
             t_idx = 1 if t_bhsd.size(0) > 1 else 0
             t_hsd = t_bhsd[t_idx]
-            t_flat = _hsd_to_flat_token(t_hsd).to(torch.float32)  # [S,HD]
+            t_flat = _hsd_to_flat_token(t_hsd).to(torch.float32)
             if S is None:
                 S, HD = t_flat.shape
             t_flats.append(t_flat)
 
-        # Now we can fully build preserves [S,HD,K]
+        # Preserves -> [S,HD,K]
         if K > 0:
             B_pad = torch.zeros(S, HD, K, device=device, dtype=torch.float32)
             for k_idx, m in enumerate(pres_list_maps):
-                if mod not in m:  # may miss in some modules
+                if mod not in m:
                     continue
                 p_val, h_p, b_p = m[mod]
                 p_bhsd = _to_bh_sd(p_val, b_p, h_p)
                 p_idx = 1 if p_bhsd.size(0) > 1 else 0
                 p_hsd = p_bhsd[p_idx]
-                p_flat = _hsd_to_flat_token(p_hsd).to(torch.float32)  # [S,HD]
+                p_flat = _hsd_to_flat_token(p_hsd).to(torch.float32)
                 B_pad[:, :, k_idx] = p_flat
-
             # per-token thin QR
-            if K > 0:
-                B_ortho = torch.zeros_like(B_pad)
-                for j in range(S):
-                    pj = B_pad[j]  # [HD,K]
-                    if torch.allclose(pj.abs().sum(), torch.tensor(0.0, device=device)):
-                        continue
-                    q, _ = torch.linalg.qr(pj, mode='reduced')  # q: [HD, r]
-                    r_rank = min(q.shape[1], K)
-                    B_ortho[j, :, :r_rank] = q[:, :r_rank]
-                B_pad = B_ortho
+            B_ortho = torch.zeros_like(B_pad)
+            for j in range(S):
+                pj = B_pad[j]  # [HD,K]
+                if torch.allclose(pj.abs().sum(), torch.tensor(0.0, device=device)):
+                    continue
+                q, _ = torch.linalg.qr(pj, mode='reduced')
+                r_rank = min(q.shape[1], K)
+                B_ortho[j, :, :r_rank] = q[:, :r_rank]
+            B_pad = B_ortho
         else:
             B_pad = torch.zeros(S, HD, 0, device=device, dtype=torch.float32)
 
@@ -197,127 +156,89 @@ def build_cora_params_multi(
             proj = torch.einsum('shk,sk->sh', B_pad, c)       # [S,HD]
             return vec_flat - proj
 
-        # ---------- build U_pad (targets, orthonormal) ----------
+        # U_pad from targets (orthonormal per token)
         U_list = []
         for r in range(R):
             u_def = _deflate(t_flats[r])
-            u_hat = u_def / (torch.linalg.norm(u_def, dim=1, keepdim=True) + 1e-8)  # [S,HD]
+            u_hat = u_def / (torch.linalg.norm(u_def, dim=1, keepdim=True) + 1e-8)
             U_list.append(u_hat)
-        # Stack [S,HD,R] then per-token QR to make them orthonormal
         U_stack = torch.stack(U_list, dim=2)  # [S,HD,R]
         U_ortho = torch.zeros_like(U_stack)
         for j in range(S):
             Uj = U_stack[j]  # [HD,R]
             if torch.allclose(Uj.abs().sum(), torch.tensor(0.0, device=device)):
                 continue
-            q, _ = torch.linalg.qr(Uj, mode='reduced')  # q:[HD,r] with r<=R
+            q, _ = torch.linalg.qr(Uj, mode='reduced')
             r_rank = min(q.shape[1], U_stack.size(2))
             U_ortho[j, :, :r_rank] = q[:, :r_rank]
-        U_pad_fp32 = U_ortho  # [S,HD,R]
+        U_pad_fp32 = U_ortho
 
-        # ---------- anchor selection per target ----------
-        # energy scores accumulated across modules later? We do it per-module then average outside by accumulating.
-        # Here we'll compute scores per target/candidate for this module, accumulate externally across modules.
-        # To do that, cache per-target scores and chosen a_hat for this module.
-        R_sizes = [len(pools[r]) for r in range(R)]
-        # Initialize accumulation on first module encounter
-        # We'll store per-target per-candidate sum of energies and counts in outer scope
-        # But since we need final chosen indices globally, we collect module-local energies now and merge after loop.
-        # Easiest: we compute anchors for this module AFTER we decide global chosen indices.
-        # Hence: first pass compute and stash a_perp (pre-norm) for each candidate to be able to score globally.
-        # For memory, we instead compute mean energy per candidate for THIS module and store as numbers.
-
-        # Compute per-target per-candidate scores for THIS module
+        # Score anchors per target for THIS module
         module_scores_per_target: List[List[float]] = []
         A_candidates_normed_per_target: List[List[torch.Tensor]] = []
         for r in range(R):
-            scores_r = []
-            anchors_normed_r = []
-            for m_idx, a_map in enumerate(pools[r]):
+            scores_r, anchors_normed_r = [], []
+            for a_map in pools[r]:
                 a_val, a_heads, a_batch = a_map[mod]
                 a_bhsd = _to_bh_sd(a_val, a_batch, a_heads)
                 a_idx = 1 if a_bhsd.size(0) > 1 else 0
                 a_hsd = a_bhsd[a_idx]
-                a_flat = _hsd_to_flat_token(a_hsd).to(torch.float32)  # [S,HD]
-
+                a_flat = _hsd_to_flat_token(a_hsd).to(torch.float32)
                 a_def = _deflate(a_flat)
-                # orthogonalize to ALL target directions in U_pad_fp32
-                # a_perp = a_def - sum_r ( <u_r, a_def> u_r )
-                coeffs = torch.einsum('sh,shr->sr', a_def, U_pad_fp32)  # [S,R]
-                projU  = torch.einsum('sr,shr->sh', coeffs, U_pad_fp32) # [S,HD]
+                coeffs = torch.einsum('sh,shr->sr', a_def, U_pad_fp32)
+                projU  = torch.einsum('sr,shr->sh', coeffs, U_pad_fp32)
                 a_perp = a_def - projU
-                # score BEFORE normalization
                 e = (torch.linalg.norm(a_perp, dim=1) ** 2).mean().item()
                 scores_r.append(e)
-                # normalized for later use if chosen
                 a_hat = a_perp / (torch.linalg.norm(a_perp, dim=1, keepdim=True) + 1e-8)
                 anchors_normed_r.append(a_hat)
             module_scores_per_target.append(scores_r)
             A_candidates_normed_per_target.append(anchors_normed_r)
 
-        # Stash everything to decide globally after finishing all modules
         out.setdefault("__accum__", {"scores": [], "mods": []})
-        out["__accum__"]["scores"].append(module_scores_per_target)  # shape [R][M_r]
+        out["__accum__"]["scores"].append(module_scores_per_target)
         out["__accum__"]["mods"].append(mod)
 
-        # Temporarily store per-module items to be finalized later
         out.setdefault("__stash__", {})
         out["__stash__"].setdefault(mod, {})
         out["__stash__"][mod].update({
             "B_pad_fp32": B_pad,
             "U_pad_fp32": U_pad_fp32,
-            "A_cands_fp32": A_candidates_normed_per_target,  # list len R; each is list len M_r of [S,HD]
+            "A_cands_fp32": A_candidates_normed_per_target,
         })
 
-    # ---------- Decide chosen anchors globally (average scores over modules) ----------
-    # Aggregate per-target per-candidate scores across modules
-    R = len(pools)
-    chosen_idxs = []
-    scores_all = []
-    # Convert accum scores into per-target arrays
-    # out["__accum__"]["scores"] is a list over modules; each item is [R][M_r]
+    # Decide anchors globally (avg over modules)
+    chosen_idxs, scores_all = [], []
     if modules:
         num_mods = len(out["__accum__"]["scores"])
-        # Initialize sums
-        sums = [ [0.0]*len(pools[r]) for r in range(R) ]
+        sums = [ [0.0]*len(pools[r]) for r in range(len(tgt_maps)) ]
         for mod_scores in out["__accum__"]["scores"]:
-            for r in range(R):
-                M_r = len(pools[r])
-                for m_idx in range(M_r):
+            for r in range(len(tgt_maps)):
+                for m_idx in range(len(pools[r])):
                     sums[r][m_idx] += float(mod_scores[r][m_idx])
-        # mean over modules
-        for r in range(R):
-            M_r = len(pools[r])
+        for r in range(len(tgt_maps)):
             means_r = [s/num_mods for s in sums[r]]
             scores_all.append(means_r)
-            chosen_idxs.append(int(max(range(M_r), key=lambda i: means_r[i])))
+            chosen_idxs.append(int(max(range(len(pools[r])), key=lambda i: means_r[i])))
     else:
-        # No modules? Edge-case.
-        chosen_idxs = [0]*R
-        scores_all = [[0.0]*len(pools[r]) for r in range(R)]
+        chosen_idxs = [0]*len(tgt_maps)
+        scores_all = [[0.0]*len(pools[r]) for r in range(len(tgt_maps))]
 
-    # ---------- Finalize params with chosen anchors ----------
+    # Finalize tensors per module
     final_params: Dict[str, Dict[str, torch.Tensor]] = {}
     for mod in modules:
         stash = out["__stash__"][mod]
-        B_pad = stash["B_pad_fp32"].to(device=device, dtype=dtype).contiguous()     # [S,HD,K]
-        U_pad = stash["U_pad_fp32"].to(device=device, dtype=dtype).contiguous()     # [S,HD,R]
-        # Build A_pad by selecting chosen index per target
+        B_pad = stash["B_pad_fp32"].to(device=device, dtype=dtype).contiguous()
+        U_pad = stash["U_pad_fp32"].to(device=device, dtype=dtype).contiguous()
         A_sel = []
-        for r in range(R):
-            cand_list = stash["A_cands_fp32"][r]
-            a_hat = cand_list[chosen_idxs[r]].to(device=device, dtype=dtype).contiguous()  # [S,HD]
+        for r in range(len(tgt_maps)):
+            a_hat = stash["A_cands_fp32"][r][chosen_idxs[r]].to(device=device, dtype=dtype).contiguous()
             A_sel.append(a_hat)
-        # Stack to [S,HD,R]
-        A_pad = torch.stack(A_sel, dim=2)
+        A_pad = torch.stack(A_sel, dim=2)  # [S,HD,R]
         final_params[mod] = {"B_pad": B_pad, "U_pad": U_pad, "A_pad": A_pad}
 
-    # Cleanup temporary accumulators
-    if "__accum__" in out:
-        del out["__accum__"]
-    if "__stash__" in out:
-        del out["__stash__"]
-
+    if "__accum__" in out: del out["__accum__"]
+    if "__stash__" in out: del out["__stash__"]
     return final_params, chosen_idxs, scores_all
 
 # ---------------------------- fast processor ----------------------------
@@ -325,10 +246,10 @@ class VisualAttentionProcess(nn.Module):
     def __init__(self, module_name=None, atten_type="original", params=None, record=False, beta=0.5, tau=0.1):
         super().__init__()
         self.module_name = module_name
-        self.atten_type = atten_type  # "original" | "erase"
-        self.params = params  # dict from build_* for this module
+        self.atten_type = atten_type
+        self.params = params
         self.record = record
-        self.beta = beta  # scalar or tensor/list of length R
+        self.beta = beta
         self.tau = tau
         self.records = {"values": {}} if record else {}
 
@@ -348,10 +269,10 @@ class AttnProcessor:
     def __init__(self, module_name=None, atten_type="original", params=None, record=False, beta=0.5, tau=0.1):
         self.module_name = module_name
         self.atten_type = atten_type
-        self.params = params  # fast precomputed tensors for this module
+        self.params = params
         self.record = record
         self.records = {"values": {}} if record else {}
-        self.beta = beta  # float or list/torch tensor of shape [R]
+        self.beta = beta
         self.tau = tau
 
     def __call__(self, attn, hidden_states, encoder_hidden_states=None, attention_mask=None, temb=None):
@@ -387,7 +308,6 @@ class AttnProcessor:
         attn_probs = attn.get_attention_scores(query, key, attention_mask)
 
         if encoder_hidden_states.shape[1] != 77:
-            # self-attn or non-CLIP length: bypass edits
             hidden_states = torch.bmm(attn_probs, value)
         else:
             if self.record:
@@ -395,51 +315,44 @@ class AttnProcessor:
                 batch = value.size(0) // heads
                 self.records["values"][self.module_name] = (value.detach(), heads, int(batch))
             elif self.params is not None and self.atten_type == "erase":
-                # === FAST MC-CORA ===
                 heads_cur = attn.heads
                 d_head = value.size(2)
                 batch_cur = max(1, value.size(0) // heads_cur)
 
-                # Fetch precomputed params
                 B_pad = self.params["B_pad"]  # [S,HD,K]
                 U_pad = self.params["U_pad"]  # [S,HD,R]
                 A_pad = self.params["A_pad"]  # [S,HD,R]
 
-                # Reshape value to [B,H,S,D] -> [B,S,HD]
                 v_bhsd = value.view(batch_cur, heads_cur, seq_len, d_head)
                 v_flat = v_bhsd.permute(0, 2, 1, 3).contiguous().view(batch_cur, seq_len, heads_cur * d_head)
 
-                # 1) preserve projection: v_pres = B (B^T v)
+                # preserve projection
                 if B_pad.size(2) > 0 and torch.count_nonzero(B_pad).item() > 0:
-                    coeffs = torch.einsum('bsh,shk->bsk', v_flat, B_pad)      # [B,S,K]
+                    coeffs = torch.einsum('bsh,shk->bsk', v_flat, B_pad)
                     v_pres = torch.einsum('bsk,shk->bsh', coeffs, B_pad)
                 else:
                     v_pres = torch.zeros_like(v_flat)
 
-                # 2) free part and per-target coefficients
-                v_free = v_flat - v_pres                                    # [B,S,HD]
-                t = torch.einsum('bsh,shr->bsr', v_free, U_pad)             # [B,S,R]
-                den = torch.linalg.norm(v_free, dim=2, keepdim=True) + 1e-8 # [B,S,1]
-                gate = (t.abs().amax(dim=2, keepdim=True) / den) >= self.tau  # [B,S,1]
+                v_free = v_flat - v_pres
+                t = torch.einsum('bsh,shr->bsr', v_free, U_pad)
+                den = torch.linalg.norm(v_free, dim=2, keepdim=True) + 1e-8
+                gate = (t.abs().amax(dim=2, keepdim=True) / den) >= self.tau
 
-                # 3) erase all targets: sum_r t_r u_r
-                erase = torch.einsum('bsr,shr->bsh', t, U_pad)              # [B,S,HD]
+                erase = torch.einsum('bsr,shr->bsh', t, U_pad)
 
-                # 4) replace via anchors: sum_r beta_r t_r a_r
                 if isinstance(self.beta, (list, tuple)):
-                    beta_vec = torch.as_tensor(self.beta, device=v_free.device, dtype=v_free.dtype)  # [R]
+                    beta_vec = torch.as_tensor(self.beta, device=v_free.device, dtype=v_free.dtype)
                 elif torch.is_tensor(self.beta):
                     beta_vec = self.beta.to(device=v_free.device, dtype=v_free.dtype)
                 else:
                     beta_vec = torch.tensor([float(self.beta)], device=v_free.device, dtype=v_free.dtype).repeat(U_pad.size(2))
-                rep_scale = torch.einsum('r,bsr->bsr', beta_vec, t)         # [B,S,R]
-                rep = torch.einsum('bsr,shr->bsh', rep_scale, A_pad)        # [B,S,HD]
+                rep_scale = torch.einsum('r,bsr->bsr', beta_vec, t)
+                rep = torch.einsum('bsr,shr->bsh', rep_scale, A_pad)
 
                 v_free_new = v_free - erase + rep
                 v_free_out = torch.where(gate, v_free_new, v_free)
-                v_new_flat = v_pres + v_free_out                             # [B,S,HD]
+                v_new_flat = v_pres + v_free_out
 
-                # Back to [B*H,S,D]
                 v_new = v_new_flat.view(batch_cur, seq_len, heads_cur, d_head).permute(0, 2, 1, 3).contiguous()
                 value = v_new.view(batch_cur * heads_cur, seq_len, d_head)
 
@@ -495,7 +408,7 @@ def diffusion(unet, scheduler, latents, text_embeddings, total_timesteps, start_
 
     return (latents, visualize_map) if record else latents
 
-# ---------------------------- batch decode ----------------------------
+# ---------------------------- decode ----------------------------
 @torch.no_grad()
 def decode_latents_batch(vae, latents_list: List[torch.Tensor]) -> List[Image.Image]:
     if len(latents_list) == 0:
@@ -507,13 +420,9 @@ def decode_latents_batch(vae, latents_list: List[torch.Tensor]) -> List[Image.Im
 
 # ---------------------------- helpers ----------------------------
 def _parse_targets(s: str) -> List[str]:
-    return [x.strip() for x in s.split(",") if x.strip()]
+    return [x.strip() for x in s.split(",") if s.strip()]
 
 def _parse_anchor_pools(s: str, R_expected: int) -> List[List[str]]:
-    """
-    Format: pools for each target separated by '|', items inside each pool separated by ','
-    Example: "a man,man person|a mouse,small animal"
-    """
     groups = [g.strip() for g in s.split("|")] if s.strip() else []
     if len(groups) == 0:
         return [[] for _ in range(R_expected)]
@@ -535,11 +444,39 @@ def _parse_betas(s: str, R_expected: int, default_beta: float) -> List[float]:
         raise ValueError(f"--beta as list must have {R_expected} values; got {len(parts)}")
     return [float(x) for x in parts]
 
+def load_concepts_csv(path: str) -> Tuple[List[str], List[str], List[str]]:
+    """CSV columns: type,name where type ∈ {target, non-target, preserve}.
+    Returns (targets, non_targets, preserves), deduped in order of first appearance.
+    """
+    targets, non_targets, preserves = [], [], []
+    seen = set()
+    with open(path, newline='', encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            t = (row.get("type") or "").strip().lower()
+            n = (row.get("name") or "").strip()
+            if not n or n in seen:
+                continue
+            seen.add(n)
+            if t == "target":
+                targets.append(n)
+            elif t == "non-target":
+                non_targets.append(n)
+            elif t == "preserve":
+                preserves.append(n)
+            else:
+                # unknown type → ignore
+                pass
+    if len(targets) == 0:
+        raise ValueError("CSV contains no rows with type=='target'.")
+    return targets, non_targets, preserves
+
 # ---------------------------- main ----------------------------
 @torch.no_grad()
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--save_root", type=str, default="")
+    parser.add_argument("--save_path", type=str, required=True,
+                        help="Single output directory; images saved as <save_path>/<mode>/<promptslug>_*.png")
     parser.add_argument("--sd_ckpt", type=str, default="CompVis/stable-diffusion-v1-4")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--mode", type=str, default="original,erase")  # original, erase
@@ -548,32 +485,70 @@ def main():
     parser.add_argument("--num_samples", type=int, default=10)
     parser.add_argument("--batch_size", type=int, default=10)
     parser.add_argument("--erase_type", type=str, default="", help="instance, style, celebrity")
-    # ---- multi-target args ----
-    parser.add_argument("--target_concepts", type=str, default="", help="Comma-separated targets")
-    parser.add_argument("--anchor_pools", type=str, default="", help="Per-target pools: groups separated by '|', items by ','")
+
+    # legacy multi-target args
+    parser.add_argument("--target_concepts", type=str, default="")
+    parser.add_argument("--anchor_pools", type=str, default="")
     parser.add_argument("--preserve_concepts", type=str, default="")
-    parser.add_argument("--beta", type=str, default="0.5", help="Scalar or comma/pipe-separated list per target")
+    parser.add_argument("--beta", type=str, default="0.5")
     parser.add_argument("--tau", type=float, default=0.1)
     parser.add_argument("--debug", action="store_true")
-    parser.add_argument("--contents", type=str, default="")
-    # Performance toggles
-    parser.add_argument("--xformers", action="store_true", help="Enable xFormers mem-efficient attention if available")
-    parser.add_argument("--compile", action="store_true", help="torch.compile the UNet (PyTorch 2.0+)")
-    parser.add_argument("--tf32", action="store_true", help="Allow TF32 matmul on Ampere+")
-    parser.add_argument("--fp32_linalg", action="store_true", help="Keep precompute in fp32 (default) but run edits in model dtype")
+    parser.add_argument("--contents", type=str, default="",
+                        help="Comma list of concepts to generate. NOTE: any concepts that also appear in --preserve_concepts will be excluded from generation.")
+
+    # perf toggles
+    parser.add_argument("--xformers", action="store_true")
+    parser.add_argument("--compile", action="store_true")
+    parser.add_argument("--tf32", action="store_true")
+    parser.add_argument("--fp32_linalg", action="store_true")
+
+    # single-anchor CSV mode
+    parser.add_argument("--single_anchor_mode", action="store_true",
+                        help="Use CSV (type,name); erase all targets; sample ONLY targets + non-targets (preserves excluded from sampling); build preserves from CSV preserves.")
+    parser.add_argument("--concepts_csv", type=str, default="")
+    parser.add_argument("--single_anchor_text", type=str, default="a person")
+
     args = parser.parse_args()
 
     assert args.num_samples >= args.batch_size
     bs = args.batch_size
     mode_list = args.mode.replace(" ", "").split(",")
-    concept_list = [s.strip() for s in args.contents.split(",") if s.strip()]
 
-    targets = _parse_targets(args.target_concepts)
-    assert len(targets) >= 1, "Provide --target_concepts as a comma-separated list."
-    pools = _parse_anchor_pools(args.anchor_pools, len(targets))  # List[List[str]] per target
-    betas = _parse_betas(args.beta, len(targets), default_beta=0.5)
+    # --- Parse mode ---
+    if args.single_anchor_mode:
+        assert args.concepts_csv, "Provide --concepts_csv when --single_anchor_mode is set."
+        targets, non_targets, preserves = load_concepts_csv(args.concepts_csv)
 
-    preserve_list = [s.strip() for s in args.preserve_concepts.split(",") if s.strip()]
+        # contents = ONLY targets + non-targets (preserves EXCLUDED from generation)
+        concept_list = list(targets) + list(non_targets)
+
+        # erase config: only targets matter; one shared anchor
+        pools = [[args.single_anchor_text] for _ in targets]
+        betas = _parse_betas(args.beta, len(targets), default_beta=0.5)
+
+        # Preserve projector from CSV 'preserve' rows (not generated)
+        preserve_list = list(preserves)
+
+        if args.debug:
+            print("[DEBUG] Single-anchor mode ON")
+            print(f"  #targets={len(targets)}  #non-targets={len(non_targets)}  #preserves={len(preserves)}")
+            print(f"  #contents(sampled)={len(concept_list)} (preserves excluded from sampling)")
+            print("  First targets:", targets[:5])
+            print("  First non-targets:", non_targets[:5])
+            print("  First preserves:", preserves[:5])
+            print(f"  Shared anchor: {args.single_anchor_text!r}")
+    else:
+        # legacy path
+        targets = _parse_targets(args.target_concepts)
+        assert len(targets) >= 1, "Provide --target_concepts in legacy mode."
+        pools = _parse_anchor_pools(args.anchor_pools, len(targets))
+        betas = _parse_betas(args.beta, len(targets), default_beta=0.5)
+        preserve_list = [s.strip() for s in args.preserve_concepts.split(",") if s.strip()]
+        concept_list = [s.strip() for s in args.contents.split(",") if s.strip()]
+        # EXCLUDE preserves from generation in legacy mode too
+        if preserve_list:
+            preserve_set = set(preserve_list)
+            concept_list = [c for c in concept_list if c not in preserve_set]
 
     if args.tf32:
         try:
@@ -587,59 +562,57 @@ def main():
     pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
 
     if args.xformers:
-        try:
-            pipe.enable_xformers_memory_efficient_attention()
-        except Exception:
-            pass
+        try: pipe.enable_xformers_memory_efficient_attention()
+        except Exception: pass
 
     if args.compile:
-        try:
-            pipe.unet = torch.compile(pipe.unet, mode="reduce-overhead", fullgraph=False)
-        except Exception:
-            pass
+        try: pipe.unet = torch.compile(pipe.unet, mode="reduce-overhead", fullgraph=False)
+        except Exception: pass
 
     unet, tokenizer, text_encoder, vae = pipe.unet, pipe.tokenizer, pipe.text_encoder, pipe.vae
+    device, dtype = pipe.device, pipe.unet.dtype
 
     # ---- Encodings ----
-    device, dtype = pipe.device, pipe.unet.dtype
     uncond_encoding = get_textencoding(get_token("", tokenizer), text_encoder).to(device, dtype=dtype)
 
-    # ---- Record once & Build multi-CORA params ----
+    # ---- Precompute CORA params ----
     if "erase" in mode_list:
-        # Targets: list of dicts
         tgt_maps = [record_concept_maps(unet, pipe, t, args.guidance_scale)["values"] for t in targets]
-
-        # Preserves: list of dicts
         pres_maps = [record_concept_maps(unet, pipe, pc, args.guidance_scale)["values"] for pc in preserve_list]
 
-        # Anchors: for each target, list of dicts (pool). If pool is empty, fallback to "a man"
         anchor_pools_maps: List[List[Dict[str, Tuple[torch.Tensor,int,int]]]] = []
         for r, pool in enumerate(pools):
             cand = pool if len(pool) > 0 else ["a man"]
             anchor_pools_maps.append([record_concept_maps(unet, pipe, a_txt, args.guidance_scale)["values"] for a_txt in cand])
 
-        records_bundle = {
-            "values": {
-                "targets": tgt_maps,
-                "anchor_pools": anchor_pools_maps,
-                "preserve": pres_maps
-            }
-        }
-
+        records_bundle = {"values": {"targets": tgt_maps, "anchor_pools": anchor_pools_maps, "preserve": pres_maps}}
         cora_params_allmods, chosen_idxs, scores_all = build_cora_params_multi(records_bundle, device, dtype)
 
         if args.debug:
             print("[DEBUG] Chosen anchors per target:")
             for r, t in enumerate(targets):
                 pool_names = pools[r] if len(pools[r]) > 0 else ["a man"]
-                print(f"  Target[{r}] {t}: {pool_names[chosen_idxs[r]]}")
+                sel = pool_names[chosen_idxs[r]]
+                print(f"  Target[{r}] {t}: {sel}")
                 print("   Scores:", {pool_names[i]: round(scores_all[r][i], 4) for i in range(len(pool_names))})
+
+    # ---- Prepare save dirs (single root) ----
+    os.makedirs(args.save_path, exist_ok=True)
+    for mode in mode_list:
+        os.makedirs(os.path.join(args.save_path, mode), exist_ok=True)
+    if len(mode_list) > 1:
+        os.makedirs(os.path.join(args.save_path, "combine"), exist_ok=True)
 
     # ---- Sampling ----
     seed_everything(args.seed, True)
     prompt_list = [[x.format(concept) for x in template_dict[args.erase_type]] for concept in concept_list]
 
-    # We'll toggle processors right before each diffusion call (no duplicate UNet refs).
+    # helper: slugify concept + prompt
+    def _slug(s: str) -> str:
+        s = re.sub(r"[^\w\s-]", "", s).strip()
+        s = re.sub(r"[\s]+", "_", s)
+        return s
+
     for i in range(int(args.num_samples // bs)):
         latents = torch.randn(bs, 4, 64, 64, device=device, dtype=dtype)
         for concept, prompts in zip(concept_list, prompt_list):
@@ -651,47 +624,23 @@ def main():
                 if "original" in mode_list:
                     set_attenprocessor(unet, atten_type="original", params=None, record=False, only_cross=True)
                     Images["original"] = diffusion(
-                        unet=unet,
-                        scheduler=pipe.scheduler,
-                        latents=latents,
-                        start_timesteps=0,
-                        text_embeddings=txt,
-                        total_timesteps=args.total_timesteps,
-                        guidance_scale=args.guidance_scale,
-                        desc=f"{prompt} | original",
+                        unet=unet, scheduler=pipe.scheduler, latents=latents, start_timesteps=0,
+                        text_embeddings=txt, total_timesteps=args.total_timesteps,
+                        guidance_scale=args.guidance_scale, desc=f"{prompt} | original",
                     )
 
                 if "erase" in mode_list:
-                    # Attach multi-target params to each attn module
                     set_attenprocessor(
-                        unet,
-                        atten_type="erase",
-                        params=cora_params_allmods,
-                        record=False,
-                        beta=[float(b) for b in betas],  # supports list per target
-                        tau=args.tau,
-                        only_cross=True,
+                        unet, atten_type="erase", params=cora_params_allmods, record=False,
+                        beta=[float(b) for b in betas], tau=args.tau, only_cross=True,
                     )
                     Images["erase"] = diffusion(
-                        unet=unet,
-                        scheduler=pipe.scheduler,
-                        latents=latents,
-                        start_timesteps=0,
-                        text_embeddings=txt,
-                        total_timesteps=args.total_timesteps,
-                        guidance_scale=args.guidance_scale,
-                        desc=f"{prompt} | MC-CORA erase",
+                        unet=unet, scheduler=pipe.scheduler, latents=latents, start_timesteps=0,
+                        text_embeddings=txt, total_timesteps=args.total_timesteps,
+                        guidance_scale=args.guidance_scale, desc=f"{prompt} | MC-CORA erase",
                     )
 
-                # ---- Save ----
-                tgt_slug = "_".join([t.replace(", ", "_") for t in targets])
-                save_path = os.path.join(args.save_root, tgt_slug, concept)
-                for mode in mode_list:
-                    os.makedirs(os.path.join(save_path, mode), exist_ok=True)
-                if len(mode_list) > 1:
-                    os.makedirs(os.path.join(save_path, "combine"), exist_ok=True)
-
-                # Batch decode for each mode
+                # ---- Decode & Save (single directory tree) ----
                 decoded = {name: decode_latents_batch(vae, [img for img in img_list]) for name, img_list in Images.items()}
 
                 def combine_h(ims: List[Image.Image]) -> Image.Image:
@@ -703,15 +652,17 @@ def main():
                         x += im.size[0]
                     return canvas
 
+                # filename pattern: <promptslug>_<idx>.png
+                pslug = _slug(prompt)
                 for idx in range(len(decoded[mode_list[0]])):
-                    fname = re.sub(r"[^\w\s]", "", prompt).replace(", ", "_") + f"_{int(idx + bs * i)}.png"
+                    base = f"{pslug}_{int(idx + bs * i)}.png"
                     row = []
                     for mode in mode_list:
-                        decoded[mode][idx].save(os.path.join(save_path, mode, fname))
+                        out_p = os.path.join(args.save_path, mode, base)
+                        decoded[mode][idx].save(out_p)
                         row.append(decoded[mode][idx])
                     if len(mode_list) > 1:
-                        combine_h(row).save(os.path.join(save_path, "combine", fname))
-
+                        combine_h(row).save(os.path.join(args.save_path, "combine", base))
 
 if __name__ == "__main__":
     main()

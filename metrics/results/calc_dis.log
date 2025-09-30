@@ -1,0 +1,21 @@
+nohup: ignoring input
+[CORA] Apple/neut: FID(SRC→TGT)=10.619584 invFID=0.086062
+[CORA] Apple/int: FID(SRC→TGT)=12.778960 invFID=0.072574
+[AdaVD] Apple: FID(SRC→TGT)=18.731595 invFID=0.050680
+[CORA] Chris Evans/neut: FID(SRC→TGT)=4.058723 invFID=0.197678
+[CORA] Chris Evans/int: FID(SRC→TGT)=4.126272 invFID=0.195074
+[AdaVD] Chris Evans: FID(SRC→TGT)=3.003201 invFID=0.249800
+[CORA] Crow/neut: FID(SRC→TGT)=2.497846 invFID=0.285890
+[CORA] Crow/int: FID(SRC→TGT)=3.383481 invFID=0.228129
+[AdaVD] Crow: FID(SRC→TGT)=22.833527 invFID=0.041958
+[CORA] Dog/neut: FID(SRC→TGT)=8.359248 invFID=0.106846
+[CORA] Dog/int: FID(SRC→TGT)=16.232385 invFID=0.058030
+[AdaVD] Dog: FID(SRC→TGT)=14.707279 invFID=0.063665
+[CORA] Donald Trump/neut: FID(SRC→TGT)=3.733318 invFID=0.211268
+[CORA] Donald Trump/int: FID(SRC→TGT)=4.062203 invFID=0.197542
+[AdaVD] Donald Trump: FID(SRC→TGT)=2.366306 invFID=0.297062
+[CORA] Taylor Swift/neut: FID(SRC→TGT)=4.063775 invFID=0.197481
+[CORA] Taylor Swift/int: FID(SRC→TGT)=3.063028 invFID=0.246122
+[AdaVD] Taylor Swift: FID(SRC→TGT)=4.207547 invFID=0.192029
+
+[Done] Wrote: metrics/results/fid_summary.csv

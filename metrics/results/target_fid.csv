@@ -1,0 +1,19 @@
+method,subject,mode,concept,SOURCE,TARGET,N_source,N_target,FID(SRC→TGT),invFID
+CORA,Chris Evans,neut,Chris Evans,outputs_cora_anc/Chris Evans/neut/erase,outputs_cora_anc/Chris Evans/neut/original,1000,1000,70.879266,0.013912
+CORA,Chris Evans,int,Chris Evans,outputs_cora_anc/Chris Evans/int/erase,outputs_cora_anc/Chris Evans/int/original,1000,1000,73.019260,0.013510
+CORA,Crow,neut,Crow,outputs_cora_anc/Crow/neut/erase,outputs_cora_anc/Crow/neut/original,1000,1000,24.668286,0.038959
+CORA,Crow,int,Crow,outputs_cora_anc/Crow/int/erase,outputs_cora_anc/Crow/int/original,1000,1000,40.030370,0.024372
+CORA,Dog,neut,Dog,outputs_cora_anc/Dog/neut/erase,outputs_cora_anc/Dog/neut/original,1000,1000,70.849811,0.013918
+CORA,Dog,int,Dog,outputs_cora_anc/Dog/int/erase,outputs_cora_anc/Dog/int/original,1000,1000,194.640515,0.005111
+CORA,Donald Trump,neut,Donald Trump,outputs_cora_anc/Donald Trump/neut/erase,outputs_cora_anc/Donald Trump/neut/original,1000,1000,68.766453,0.014334
+CORA,Donald Trump,int,Donald Trump,outputs_cora_anc/Donald Trump/int/erase,outputs_cora_anc/Donald Trump/int/original,1000,1000,75.637153,0.013049
+CORA,Taylor Swift,neut,Taylor Swift,outputs_cora_anc/Taylor Swift/neut/erase,outputs_cora_anc/Taylor Swift/neut/original,1000,1000,61.629100,0.015967
+CORA,Taylor Swift,int,Taylor Swift,outputs_cora_anc/Taylor Swift/int/erase,outputs_cora_anc/Taylor Swift/int/original,1000,1000,46.224062,0.021176
+AdaVD,Chris Evans,-,Chris Evans,outputs_adavd/Chris Evans/retain,outputs_adavd/Chris Evans/original,1000,1000,69.656771,0.014153
+AdaVD,Crow,-,Crow,outputs_adavd/Crow/retain,outputs_adavd/Crow/original,1000,1000,221.527830,0.004494
+AdaVD,Dog,-,Dog,outputs_adavd/Dog/retain,outputs_adavd/Dog/original,870,870,191.198533,0.005203
+AdaVD,Donald Trump,-,Donald Trump,outputs_adavd/Donald Trump/retain,outputs_adavd/Donald Trump/original,1000,1000,74.882976,0.013178
+AdaVD,Taylor Swift,-,Taylor Swift,outputs_adavd/Taylor Swift/retain,outputs_adavd/Taylor Swift/original,1000,1000,94.922242,0.010425
+CORA,Apple,neut,Apple,outputs_cora_anc/Apple/neut/erase,outputs_cora_anc/Apple/neut/original,1000,1000,104.543136,0.009475
+CORA,Apple,int,Apple,outputs_cora_anc/Apple/int/erase,outputs_cora_anc/Apple/int/original,1000,1000,140.791406,0.007053
+AdaVD,Apple,-,Apple,outputs_adavd/Apple/retain,outputs_adavd/Apple/original,900,900,222.014246,0.004484

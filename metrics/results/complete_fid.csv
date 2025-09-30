@@ -1,0 +1,19 @@
+method,subject,mode,SOURCE,TARGET,N_source,N_target,FID(SRC→TGT),invFID
+CORA,Apple,neut,outputs_cora_anc/Apple/neut/erase,outputs_cora_anc/Apple/neut/original,7000,7000,10.619584,0.086062
+CORA,Apple,int,outputs_cora_anc/Apple/int/erase,outputs_cora_anc/Apple/int/original,7000,7000,12.778960,0.072574
+AdaVD,Apple,-,outputs_adavd/Apple/retain,outputs_adavd/Apple/original,4170,4170,18.731595,0.050680
+CORA,Chris Evans,neut,outputs_cora_anc/Chris Evans/neut/erase,outputs_cora_anc/Chris Evans/neut/original,8000,8000,4.058723,0.197678
+CORA,Chris Evans,int,outputs_cora_anc/Chris Evans/int/erase,outputs_cora_anc/Chris Evans/int/original,8000,8000,4.126272,0.195074
+AdaVD,Chris Evans,-,outputs_adavd/Chris Evans/retain,outputs_adavd/Chris Evans/original,8000,8000,3.003201,0.249800
+CORA,Crow,neut,outputs_cora_anc/Crow/neut/erase,outputs_cora_anc/Crow/neut/original,6000,6000,2.497846,0.285890
+CORA,Crow,int,outputs_cora_anc/Crow/int/erase,outputs_cora_anc/Crow/int/original,6000,6000,3.383481,0.228129
+AdaVD,Crow,-,outputs_adavd/Crow/retain,outputs_adavd/Crow/original,4480,4480,22.833527,0.041958
+CORA,Dog,neut,outputs_cora_anc/Dog/neut/erase,outputs_cora_anc/Dog/neut/original,7000,7000,8.359248,0.106846
+CORA,Dog,int,outputs_cora_anc/Dog/int/erase,outputs_cora_anc/Dog/int/original,7000,7000,16.232385,0.058030
+AdaVD,Dog,-,outputs_adavd/Dog/retain,outputs_adavd/Dog/original,4610,4610,14.707279,0.063665
+CORA,Donald Trump,neut,outputs_cora_anc/Donald Trump/neut/erase,outputs_cora_anc/Donald Trump/neut/original,8000,8000,3.733318,0.211268
+CORA,Donald Trump,int,outputs_cora_anc/Donald Trump/int/erase,outputs_cora_anc/Donald Trump/int/original,8000,8000,4.062203,0.197542
+AdaVD,Donald Trump,-,outputs_adavd/Donald Trump/retain,outputs_adavd/Donald Trump/original,8000,8000,2.366306,0.297062
+CORA,Taylor Swift,neut,outputs_cora_anc/Taylor Swift/neut/erase,outputs_cora_anc/Taylor Swift/neut/original,8000,8000,4.063775,0.197481
+CORA,Taylor Swift,int,outputs_cora_anc/Taylor Swift/int/erase,outputs_cora_anc/Taylor Swift/int/original,8000,8000,3.063028,0.246122
+AdaVD,Taylor Swift,-,outputs_adavd/Taylor Swift/retain,outputs_adavd/Taylor Swift/original,8000,8000,4.207547,0.192029
