@@ -372,12 +372,12 @@ def main():
     seed_everything(args.seed, True)
     prompt_list = [[x.format(concept) for x in template_dict[args.erase_type]] for concept in concept_list]
     for i in range(int(args.num_samples // bs)):
-        latent = torch.randn(bs, 4, 64, 64).to(pipe.device, dtype=target_concept_encoding.dtype)
+        latent = torch.randn(bs, 4, 64, 64, device=pipe.device, dtype=pipe.unet.dtype)
         for concept, prompts in zip(concept_list, prompt_list):
             for prompt in prompts:
 
                 ORTHO_DECOMP_STORAGE, Images = {}, {}
-                encoding = get_textencoding(get_token(prompt, tokenizer), text_encoder)
+                encoding = get_textencoding(get_token(prompt, tokenizer), text_encoder).to(pipe.device, dtype=pipe.unet.dtype)
 
                 if 'original' in mode_list:
                     Images['original'] = diffusion(unet=unet_original, scheduler=pipe.scheduler, 

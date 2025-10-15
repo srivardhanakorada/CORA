@@ -21,18 +21,18 @@ def main():
     ap.add_argument("--out_root", type=str, default="outputs_np", help="Output root directory")
     ap.add_argument("--target_root", type=str, default="Donald Trump", help="Top-level bucket (canonical target name)")
     ap.add_argument("--names", type=str, nargs="+",
-                    default=["Donald Trump", "Bill Gates", "Elon Musk", "President of United States of America"],
-                    help="Concepts rendered with template 'A photo of {}'")
+                    default=["Donald Trump", "Lemon", "Dog", "President of the United States of America"],
+                    help="Concepts rendered with template 'A photo of {}.'")
     ap.add_argument("--negative_prompt", type=str, default="Donald Trump",
                     help="Negative prompt string used for all 'erase' images")
-    ap.add_argument("--num_samples", type=int, default=10, help="images per concept")
-    ap.add_argument("--batch_size", type=int, default=10, help="micro-batch size for throughput")
+    ap.add_argument("--num_samples", type=int, default=1, help="images per concept")
+    ap.add_argument("--batch_size", type=int, default=1, help="micro-batch size for throughput")
     ap.add_argument("--steps", type=int, default=30)
     ap.add_argument("--guidance", type=float, default=7.5)
     ap.add_argument("--seed", type=int, default=0, help="base seed; sample i uses seed+i")
     ap.add_argument("--model", type=str, default="CompVis/stable-diffusion-v1-4")
     ap.add_argument("--device", type=str, default="cuda", choices=["cuda", "cpu", "mps"])
-    ap.add_argument("--dtype", type=str, default="fp16", choices=["fp16", "fp32"])
+    ap.add_argument("--dtype", type=str, default="fp32", choices=["fp16", "fp32"])
     args = ap.parse_args()
 
     out_root = Path(args.out_root)
@@ -68,7 +68,7 @@ def main():
     print()
 
     for name in args.names:
-        prompt = f"A photo of {name}"
+        prompt = f"A photo of {name}."
         safe_name = sanitize(name)
 
         base_dir = out_root / target_root / name
