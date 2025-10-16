@@ -148,22 +148,20 @@ combined_celebs = [
     "A photo of {} and Donald Trump."
 ]
 
-selected_instances = [
-    "a photo of a large {}.",
-    "a rendition of a {}.",
-    "a photo of a nice {}.",
-    "a photo of a weird {}.",
-]
-
-simple = [
-    "A photo of {}."
+celebs = [
+    "A photo of {}.",
+    # "{} walking down the street in casual attire.",
+    # "{} captured laughing during an interview.",
+    # "{} enjoying a quiet moment reading a book.",
+    # "A casual photo of {} walking a dog in the park.",
+    # "A close-up of {} on stage during a live performance.",
+    # "A candid moment of {} sipping coffee at a café.",
+    # "{} in an official photo.",
+    # "{} giving an inspiring speech at a charity event.",
+    # "{} flashing a peace sign while posing for a selfie.",
 ]
 
 template_dict = {
-    'instance': imagenet_templates,
-    'style': painting_templates,
-    'celebrity': celebrity_templates,
     'combined_celebs': combined_celebs,
-    'selected_instances' : selected_instances,
-    'simple' : simple
+    'celebs' : celebs
 }
