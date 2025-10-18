@@ -75,6 +75,8 @@ def any_match_target(fn_noext_lower: str, targets_lower: List[str]) -> bool:
     for t in targets_lower:
         if f"a photo of {t}" in fn_noext_lower:
             return True
+        # else: 
+        #     if targets_lower[0]!= t: print(fn_noext_lower,t)
     return False
 
 
