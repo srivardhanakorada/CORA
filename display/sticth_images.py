@@ -47,8 +47,8 @@ def load_names(args) -> List[str]:
     return names
 
 def find_images_for_name(image_dir: str, name: str) -> List[Tuple[int, str]]:
-    pat1 = os.path.join(image_dir, f"A photo of {glob.escape(name)}_*.png")
-    pat2 = os.path.join(image_dir, f"A photo of {glob.escape(name)}_*.PNG")
+    pat1 = os.path.join(image_dir, f"A_photo_of_{glob.escape(name)}_*.png")
+    pat2 = os.path.join(image_dir, f"A_photo_of_{glob.escape(name)}_*.PNG")
     candidates = glob.glob(pat1) + glob.glob(pat2)
     parsed: List[Tuple[int, str]] = []
     for p in candidates:
