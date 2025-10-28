@@ -33,8 +33,7 @@ from tqdm import tqdm
 TARGET_GROUPS = [
     ["donald trump",
      "president of the united states of america",
-     "husband of melania trump",
-     "wife of donald trump"],
+     "husband of melania trump"],
     ["dwayne johnson"],
     ["mark zuckerberg",
      "ceo of facebook",
@@ -50,7 +49,6 @@ TARGET_GROUPS = [
 PRESERVE_NON_TARGETS = [
     "elon musk",
     "tom cruise",
-    "first lady of united states",
 ]
 
 # ------------------- Constants & Helpers -------------------

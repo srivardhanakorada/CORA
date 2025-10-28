@@ -165,3 +165,12 @@ template_dict = {
     'combined_celebs': combined_celebs,
     'celebs' : celebs
 }
+
+object_templates = [
+    "A photo of {}.",
+    "A close-up photo of {}.",
+    "A photo of many {}.",
+    "A potrait of {}.",
+    "A picture of {}.",
+    "A professional photo of {}."
+]

@@ -8,7 +8,7 @@ CUDA_VISIBLE_DEVICES=1 nohup python adavd_src/main_adavd.py \
   --mode "original,retain" \
   --erase_type celebs \
   --target_concept "Mark Zuckerberg" \
-  --contents "Mark Zuckerberg, Founder of Facebook, CEO of Facebook ,Lemon, Dog" \
+  --contents "Anne Hathaway, Tom Cruise" \
   --num_samples 100 --batch_size 10 \
   --save_path "results/adavd/zuckerberg" \
   > "$LOGFILE" 2>&1 < /dev/null &
