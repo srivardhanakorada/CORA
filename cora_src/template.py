@@ -163,5 +163,6 @@ celebs = [
 
 template_dict = {
     'combined_celebs': combined_celebs,
-    'celebs' : celebs
+    'celebs' : celebs,
+    'art' : painting_templates
 }

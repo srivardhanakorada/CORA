@@ -375,7 +375,7 @@ def main():
         latent = torch.randn(bs, 4, 64, 64, device=pipe.device, dtype=pipe.unet.dtype)
         for concept, prompts in zip(concept_list, prompt_list):
             for prompt in prompts:
-
+                prompt = concept_list[0] ### SPECIFIC FOR GEN_BENCH
                 ORTHO_DECOMP_STORAGE, Images = {}, {}
                 encoding = get_textencoding(get_token(prompt, tokenizer), text_encoder).to(pipe.device, dtype=pipe.unet.dtype)
 
@@ -427,7 +427,8 @@ def main():
                     for i, img in enumerate(Images): new_img.paste(img, (sum(widths[:i]), 0))
                     return new_img
                 for idx in range(len(decoded_imgs[mode_list[0]])):
-                    save_filename = re.sub(r'[^\w\s]', '', prompt).replace(', ', '_') + f"_{int(idx + bs * i)}.png"
+                    rejoined = "_".join(args.target_concept.split())
+                    save_filename = rejoined + f"_{int(args.seed)}.png"
                     images_to_combine = []
                     for mode in mode_list: 
                         decoded_imgs[mode][idx].save(os.path.join(save_path, mode, save_filename))

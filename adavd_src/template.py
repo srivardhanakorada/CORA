@@ -161,9 +161,14 @@ celebs = [
     # "{} flashing a peace sign while posing for a selfie.",
 ]
 
+empty = [
+    ""
+]
+
 template_dict = {
     'combined_celebs': combined_celebs,
-    'celebs' : celebs
+    'celebs' : celebs,
+    'empty' : empty
 }
 
 object_templates = [

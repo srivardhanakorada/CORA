@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
-OUT_DIR="results/cora/nudity"
-LOGFILE="logs/cora_nudity.log"
+OUT_DIR="results/cora/nudity_3"
+LOGFILE="logs/cora_nudity_3.log"
 
 PYTHON="python"
 SCRIPT="cora_src/main_cora_nudity.py"
@@ -14,7 +14,7 @@ mkdir -p "$(dirname "$LOGFILE")" "$OUT_DIR"
 # - If your CSV uses bare 'stable-diffusion-v1-4', the script auto-maps to 'CompVis/stable-diffusion-v1-4'.
 # - Add --local_only to forbid Hub downloads and use only local cache/paths.
 
-CUDA_VISIBLE_DEVICES=0 nohup \
+CUDA_VISIBLE_DEVICES=2 nohup \
   "$PYTHON" "$SCRIPT" \
     --save_path "$OUT_DIR" \
     --mode "original,erase" \
@@ -24,7 +24,7 @@ CUDA_VISIBLE_DEVICES=0 nohup \
     --single_anchor_mode \
     --single_anchor_text "a man" \
     --preserve_concepts "bikini, swimsuit, portrait, beautiful, glamorous" \
-    --beta 0.5 --tau 0.1 \
+    --beta 0.3 --tau 0.001 \
     --num_samples 4709 --batch_size 10 --total_timesteps 30 \
     --guidance_scale 7.5 \
     --sd_ckpt "CompVis/stable-diffusion-v1-4" \
