@@ -19,8 +19,8 @@ from tqdm import tqdm
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 MODEL, PREPROCESS = clip.load("ViT-L/14", device=DEVICE)
 
-COMBINED_DIR = "results/cora/genbench/combined"
-ORIG_DIR = "results/cora/genbench/original"
+COMBINED_DIR = "results/adavd/genbench/combine"
+ORIG_DIR = "results/adavd/genbench/original"
 CSV_PATH = "gen_bench_40/gen_bench_40.csv"   # Adjust if needed
 
 # ----------------------------

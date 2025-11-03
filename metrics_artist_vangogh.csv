@@ -1,0 +1,10 @@
+concept,group,num_images,mean_CS,note
+van gogh,target,300,0.18385880162318546,CS vs canonical 'van gogh'
+monet,non_target,300,0.22488246525327366,CS vs own concept
+picasso,non_target,300,0.16948212704310814,CS vs own concept
+andy warhol,non_target,300,0.16289608657360077,CS vs own concept
+caravaggio,non_target,300,0.1885196854174137,CS vs own concept
+
+ESR (1 - mean_CS_targets),,300,0.8161411983768145,canonical: van gogh
+PSR (mean_CS_non_targets),,1200,0.18644509107184906,
+"HM(ESR,PSR)",,,0.30354598234637975,
